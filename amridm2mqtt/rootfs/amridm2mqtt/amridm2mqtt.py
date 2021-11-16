@@ -67,6 +67,7 @@ def send_mqtt(
             port=settings.MQTT_PORT,
             auth=AUTH,
             tls=settings.MQTT_TLS,
+            client_id=settings.MQTT_CLIENT_ID,
         )
     except Exception as ex:  # pylint: disable=broad-except
         logging.error("MQTT Publish Failed: %s", str(ex))
@@ -130,12 +131,12 @@ while True:
                 "Sending meter %s reading: %s", meter_id, current_reading_in_kwh
             )
             send_mqtt(
-                f"readings/${meter_id}/meter_reading",
+                f"${settings.MQTT_BASE_TOPIC}/${meter_id}/meter_reading",
                 str(current_reading_in_kwh),
             )
 
             logging.debug("Sending meter %s rate: %s", meter_id, rate)
-            send_mqtt(f"readings/${meter_id}/meter_rate", str(rate))
+            send_mqtt(f"${settings.MQTT_BASE_TOPIC}/${meter_id}/meter_rate", str(rate))
 
             # store interval ID to avoid duplicating data
             set_last_interval(meter_id, interval_cur)

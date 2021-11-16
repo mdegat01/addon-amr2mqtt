@@ -38,6 +38,13 @@ export "MQTT_PORT=${port}"
 export "MQTT_USERNAME=${username}"
 export "MQTT_PASSWORD=${password}"
 
+if bashio::config.exists 'mqtt.client_id'; then
+    export "MQTT_CLIENT_ID=$(bashio::config 'mqtt.client_id')"
+fi
+if bashio::config.exists 'mqtt.base_topic'; then
+    export "MQTT_BASE_TOPIC=$(bashio::config 'mqtt.base_topic')"
+fi
+
 if ! bashio::config.is_empty 'mqtt.ca'; then
     export "MQTT_CA=$(bashio::config 'mqtt.ca')"
     

@@ -1,7 +1,7 @@
 ---
 name: AMRIDM2MQTT
 url: https://github.com/mdegat01/addon-amridm2mqtt
-version: edge
+version: dev
 slug: amridm2mqtt
 arch:
   - aarch64

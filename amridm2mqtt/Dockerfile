@@ -41,8 +41,7 @@ RUN set -eux; \
     \
     echo "Add user for AMRIDM2MQTT"; \
     mkdir -p /data/amridm2mqtt; \
-    addgroup -S abc; \
-    adduser -u 12345 -h /data/amridm2mqtt/ -D -S abc -G abc;
+    useradd -u 12345 -U -d /data/amridm2mqtt abc;
 
 # Add rtlamr
 COPY --from=build_rtlamr /usr/bin/rtlamr /usr/bin/rtlamr

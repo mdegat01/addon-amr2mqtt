@@ -1,0 +1,73 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Add-on: Hedgedoc
+# Runs Hedgedoc
+# ==============================================================================
+
+declare host
+declare port
+declare username
+declare password
+
+# --- LOAD BASIC SETTINGS ---
+bashio::log.debug "Loading basic settings..."
+export "WH_MULTIPLIER=$(bashio::config 'wh_multiplier')"
+export "READINGS_PER_HOUR=$(bashio::config 'readings_per_hour')"
+
+IFS=","
+export "WATCHED_METERS=$(bashio::config 'watched_meters')"
+unset IFS
+
+# --- LOAD MQTT SETTINGS ---
+bashio::log.debug "Setting MQTT details..."
+if ! bashio::config.is_empty 'mqtt.host'; then
+    host=$(bashio::config 'mqtt.host')
+    port=$(bashio::config 'mqtt.port')
+    username=$(bashio::config 'mqtt.username')
+    password=$(bashio::config 'mqtt.password')
+else
+    host=$(bashio::services 'mqtt' 'host')
+    port=$(bashio::services 'mqtt' 'port')
+    username=$(bashio::services 'mqtt' 'username')
+    password=$(bashio::services 'mqtt' 'password')
+fi
+
+export "MQTT_HOST=${host}"
+export "MQTT_PORT=${port}"
+export "MQTT_USERNAME=${username}"
+export "MQTT_PASSWORD=${password}"
+
+if bashio::config.exists 'mqtt.client_id'; then
+    export "MQTT_CLIENT_ID=$(bashio::config 'mqtt.client_id')"
+fi
+if bashio::config.exists 'mqtt.base_topic'; then
+    export "MQTT_BASE_TOPIC=$(bashio::config 'mqtt.base_topic')"
+fi
+
+if ! bashio::config.is_empty 'mqtt.ca'; then
+    export "MQTT_CA=$(bashio::config 'mqtt.ca')"
+    
+    if ! bashio::config.is_empty 'mqtt.cert'; then
+        export "MQTT_CERT=$(bashio::config 'mqtt.cert')"
+        export "MQTT_KEY=$(bashio::config 'mqtt.key')"
+    fi
+fi
+
+# --- SET LOG LEVEL ---
+case "$(bashio::config 'log_level')" in \
+    trace)      ;& \
+    debug)      log_level='DEBUG' ;; \
+    notice)     ;& \
+    warning)    log_level='WARNING' ;; \
+    error)      log_level='ERROR' ;; \
+    fatal)      log_level='CRITICAL' ;; \
+    *)          log_level='INFO' ;; \
+esac;
+export CMD_LOGLEVEL="${log_level}"
+bashio::log.info "Hedgedoc log level set to ${log_level}"
+
+
+bashio::log.info 'Handing over control to AMRIDM2MQTT...'
+exec s6-setuidgid abc \
+    /usr/bin/python3 /amridm2mqtt/amridm2mqtt.py

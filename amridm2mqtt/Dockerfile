@@ -22,7 +22,6 @@ RUN set -eux; \
     curl -J -L -o /tmp/rtlamr.tar.gz \
     "https://github.com/bemasher/rtlamr/releases/download/v${RTLAMR_VERSION}/rtlamr_linux_${BINARCH}.tar.gz"; \
     tar -xf /tmp/rtlamr.tar.gz -C /usr/bin; \
-    mv /usr/bin/rtlamr_linux_${BINARCH} /usr/bin/rtlamr; \
     chmod a+x /usr/bin/rtlamr; \
     rm /tmp/rtlamr.tar.gz;
 

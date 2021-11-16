@@ -8,7 +8,6 @@ arch:
   - amd64
   - armv7
   - armhf
-  - i386
 description: AMRIDM2MQTT for Home Assistant
 uart: true
 services:

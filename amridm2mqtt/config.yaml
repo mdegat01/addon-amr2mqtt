@@ -18,6 +18,7 @@ options:
   watched_meters: []
   wh_multiplier: 1000
   readings_per_hour: 12
+  mqtt: {}
 schema:
   watched_meters:
     - int

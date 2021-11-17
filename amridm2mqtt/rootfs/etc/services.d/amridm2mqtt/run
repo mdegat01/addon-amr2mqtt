@@ -64,8 +64,8 @@ case "$(bashio::config 'log_level')" in \
     fatal)      log_level='CRITICAL' ;; \
     *)          log_level='INFO' ;; \
 esac;
-export CMD_LOGLEVEL="${log_level}"
-bashio::log.info "Hedgedoc log level set to ${log_level}"
+export LOG_LEVEL="${log_level}"
+bashio::log.info "Log level set to ${log_level}"
 
 
 bashio::log.info 'Handing over control to AMRIDM2MQTT...'

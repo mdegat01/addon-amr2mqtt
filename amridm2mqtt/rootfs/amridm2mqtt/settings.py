@@ -8,7 +8,7 @@ import logging
 # List may contain only one entry - [12345678]
 # or multiple entries - [12345678, 98765432, 12340123]
 power_meters = os.environ["WATCHED_METERS"].replace(",", " ").split(" ")
-WATCHED_METERS = [int(meter_id) for meter_id in power_meters]
+WATCHED_METERS = [int(meter_id) for meter_id in power_meters if meter_id]
 
 # multiplier to get reading to Watt Hours (Wh)
 # examples:
@@ -72,7 +72,7 @@ EV_TO_LOG_LEVEL = {
 LOG_LEVEL = EV_TO_LOG_LEVEL.get(os.environ.get("LOG_LEVEL"))
 
 # path to rtlamr
-RTLAMR = "/root/go/bin/rtlamr"
+RTLAMR = "/usr/bin/rtlamr"
 
 # path to rtl_tcp
 RTL_TCP = "/usr/bin/rtl_tcp"

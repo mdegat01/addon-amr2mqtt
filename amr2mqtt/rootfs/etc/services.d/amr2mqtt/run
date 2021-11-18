@@ -69,7 +69,7 @@ export LOG_LEVEL="${log_level}"
 bashio::log.info "Log level set to ${log_level}"
 
 bashio::log.info 'Waiting for rtl_tcp...'
-bahio::net.wait_for 1234
+bashio::net.wait_for 1234
 
 bashio::log.info 'Handing over control to AMR2MQTT...'
 exec s6-setuidgid abc \

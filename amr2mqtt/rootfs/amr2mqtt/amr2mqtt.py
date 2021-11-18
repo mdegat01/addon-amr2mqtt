@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Runs rtlamr to watch for IDM broadcasts from power meter. If meter id
+Runs rtlamr to watch for broadcasts from power meter. If meter id
 is in the list, usage is sent to 'readings/{meter id}/meter_reading'
 topic on the MQTT broker specified in settings.
 

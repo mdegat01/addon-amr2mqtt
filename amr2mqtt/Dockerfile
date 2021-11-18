@@ -39,16 +39,16 @@ RUN set -eux; \
     update-ca-certificates; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*; \
     \
-    echo "Add user for AMRIDM2MQTT"; \
-    mkdir -p /data/amridm2mqtt; \
-    useradd -u 12345 -U -d /data/amridm2mqtt abc;
+    echo "Add user for AMR2MQTT"; \
+    mkdir -p /data/amr2mqtt; \
+    useradd -u 12345 -U -d /data/amr2mqtt abc;
 
 # Add rtlamr
 COPY --from=build_rtlamr /usr/bin/rtlamr /usr/bin/rtlamr
 RUN rtlamr --version
 
 COPY rootfs /
-WORKDIR /data/amridm2mqtt
+WORKDIR /data/amr2mqtt
 
 # Build arguments
 ARG BUILD_ARCH

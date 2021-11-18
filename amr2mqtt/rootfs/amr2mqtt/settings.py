@@ -34,18 +34,17 @@ WH_MULTIPLIER = int(os.environ.get("WH_MULTIPLIER", 1000))
 #     READINGS_PER_HOUR = 4
 READINGS_PER_HOUR = int(os.environ.get("READINGS_PER_HOUR", 12))
 
-# MQTT Server settings
-# MQTT_HOST needs to be a string
-# MQTT_PORT needs to be an int
-# MQTT_USER needs to be a string
-# MQTT_PASSWORD needs to be a string
-# MQTT_CLIENT_ID is a string if provided, library randomly generates one if omitted
-# If no authentication, leave MQTT_USER and MQTT_PASSWORD empty
-MQTT_HOST = os.environ.get("MQTT_HOST", "127.0.0.1")
-MQTT_PORT = int(os.environ.get("MQTT_PORT", 1883))
-MQTT_USER = os.environ.get("MQTT_USER", "")
-MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD", "")
+# Get server and auth settings
+MQTT_HOST = os.environ.get("MQTT_HOST")
+MQTT_PORT = int(os.environ.get("MQTT_PORT"))
 MQTT_CLIENT_ID = os.environ.get("MQTT_CLIENT_ID")
+
+username = os.environ.get("MQTT_USERNAME")
+password = os.environ.get("MQTT_PASSWORD")
+if username and password:
+    MQTT_AUTH = {"username": username, "password": password}
+else:
+    MQTT_AUTH = None
 
 # If TLS in use, a CA file must be provided
 # Client Key+Cert can optionally be provided as well

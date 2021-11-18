@@ -31,6 +31,7 @@ schema:
     - list(scm|idm)
   mqtt:
     host: str?
+    port: port?
     ca: str?
     cert: str?
     key: str?

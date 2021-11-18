@@ -11,6 +11,7 @@ arch:
 description: AMRIDM2MQTT for Home Assistant
 uart: true
 udev: true
+usb: true
 services:
   - mqtt:want
 map:

@@ -26,17 +26,17 @@ else
     fi
 fi
 if bashio::config.exists 'mqtt.cert'; then
-    if ! bashio::fs.file_exists "/ssl/$(bashio::config 'mqtt.cert')"; then
+    if ! bashio::fs.file_exists "$(bashio::config 'mqtt.cert')"; then
         bashio::log.fatal
         bashio::log.fatal "The file specified for 'mqtt.cert' does not exist!"
-        bashio::log.fatal "Ensure client certificate file exists in /ssl and correct path is provided."
+        bashio::log.fatal "Ensure client certificate file exists and full path is provided."
         bashio::log.fatal
         bashio::exit.nok
     fi
-    if ! bashio::fs.file_exists "/ssl/$(bashio::config 'mqtt.key')"; then
+    if ! bashio::fs.file_exists "$(bashio::config 'mqtt.key')"; then
         bashio::log.fatal
         bashio::log.fatal "The file specified for 'mqtt.key' does not exist!"
-        bashio::log.fatal "Ensure client certificate key file exists in /ssl and correct path is provided."
+        bashio::log.fatal "Ensure client certificate key file exists and full path is provided."
         bashio::log.fatal
         bashio::exit.nok
     fi

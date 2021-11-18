@@ -47,7 +47,7 @@ if bashio::config.exists 'mqtt.base_topic'; then
 fi
 
 if ! bashio::config.is_empty 'mqtt.ca'; then
-    export "MQTT_CA=$(bashio::config 'mqtt.ca')"
+    export "MQTT_CA=/ssl/$(bashio::config 'mqtt.ca')"
     
     if ! bashio::config.is_empty 'mqtt.cert'; then
         export "MQTT_CERT=$(bashio::config 'mqtt.cert')"

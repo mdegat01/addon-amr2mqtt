@@ -6,4 +6,10 @@
 # ==============================================================================
 
 bashio::log.info 'Starting rtl_tcp daemon...'
-/usr/bin/rtl_tcp
+# If log level is set higher then notice, suppress all output from rtl_tcp
+case "$(bashio::config 'log_level')" in \
+    warning)    ;& \
+    error)      ;& \
+    fatal)      /usr/bin/rtl_tcp > /dev/null 2>&1 ;; \
+    *)          /usr/bin/rtl_tcp ;; \
+esac;

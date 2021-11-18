@@ -6,5 +6,4 @@
 # ==============================================================================
 
 bashio::log.info 'Starting rtl_tcp daemon...'
-exec s6-setuidgid abc \
-    /usr/bin/rtl_tcp
+/usr/bin/rtl_tcp

@@ -55,6 +55,10 @@ TODO
 
 TODO
 
+### Option: `message_types`
+
+TODO
+
 ### Option: `mqtt.host`
 
 TODO

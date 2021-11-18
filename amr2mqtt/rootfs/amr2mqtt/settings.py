@@ -77,6 +77,3 @@ LOG_LEVEL = EV_TO_LOG_LEVEL.get(os.environ.get("LOG_LEVEL"))
 
 # path to rtlamr
 RTLAMR = "/usr/bin/rtlamr"
-
-# path to rtl_tcp
-RTL_TCP = "/usr/bin/rtl_tcp"

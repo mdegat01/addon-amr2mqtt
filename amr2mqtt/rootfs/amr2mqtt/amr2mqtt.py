@@ -105,7 +105,7 @@ while True:
         # proper SCM results have 9 fields
         elif len(flds) == 9:
             # get some required info: meter ID, current meter reading,
-            meter_id = int(flds[9])
+            meter_id = int(flds[3])
             read_cur = int(flds[7])
 
         # invalid message or unsupported message type

@@ -1,8 +1,8 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 # ==============================================================================
-# Home Assistant Add-on: Hedgedoc
-# Runs Hedgedoc
+# Home Assistant Add-on: AMR2MQTT
+# Runs AMR2MQTT
 # ==============================================================================
 
 declare host
@@ -69,6 +69,6 @@ export LOG_LEVEL="${log_level}"
 bashio::log.info "Log level set to ${log_level}"
 
 
-bashio::log.info 'Handing over control to AMRIDM2MQTT...'
+bashio::log.info 'Handing over control to AMR2MQTT...'
 exec s6-setuidgid abc \
-    /usr/bin/python3 /amridm2mqtt/amridm2mqtt.py
+    /usr/bin/python3 /amr2mqtt/amr2mqtt.py

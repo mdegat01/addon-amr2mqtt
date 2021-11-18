@@ -1,7 +1,7 @@
 #!/usr/bin/execlineb -S0
 # ==============================================================================
-# Home Assistant Add-on: AMRIDM2MQTT
-# Take down the S6 supervision tree when AMRIDM2MQTT fails
+# Home Assistant Add-on: AMR2MQTT
+# Take down the S6 supervision tree when AMR2MQTT fails
 # ==============================================================================
 if { s6-test ${1} -ne 0 }
 if { s6-test ${1} -ne 256 }

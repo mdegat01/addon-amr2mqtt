@@ -1,7 +1,7 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 # ==============================================================================
-# Home Assistant Add-on: AMRIDM2MQTT
+# Home Assistant Add-on: AMR2MQTT
 # This validates config and sets up app files/folders
 # ==============================================================================
 

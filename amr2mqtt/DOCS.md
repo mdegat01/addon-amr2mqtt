@@ -1,4 +1,4 @@
-# Home Assistant Add-on: HedgeDoc
+# Home Assistant Add-on: AMR2MQTT
 
 ## Install
 
@@ -127,7 +127,7 @@ You could also [open an issue here][issue] on GitHub.
 
 The original setup of this repository is by [Mike Degatano][mdegat01].
 
-The amridm2mqtt service ported here was created by [ragingcomputer][ragingcomputer].
+The amridm2mqtt service this was built off of was created by [ragingcomputer][ragingcomputer].
 
 For a full list of all authors and contributors,
 check [the contributor's page][contributors].
@@ -157,18 +157,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 [add-addon-shield]: https://my.home-assistant.io/badges/supervisor_addon.svg
-[add-addon]: https://my.home-assistant.io/redirect/supervisor_addon/?addon=39bd2704_amridm2mqtt
+[add-addon]: https://my.home-assistant.io/redirect/supervisor_addon/?addon=39bd2704_amr2mqtt
 [add-addon-mosquitto]: https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_mosquitto
 [add-repo-shield]: https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg
 [add-repo]: https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmdegat01%2Fhassio-addons
 [addon-mosquitto]: https://github.com/home-assistant/addons/tree/master/mosquitto
-[amridm2mqtt]: https://github.com/ragingcomputer/amridm2mqtt
-[contributors]: https://github.com/mdegat01/addon-hedgedoc/graphs/contributors
+[contributors]: https://github.com/mdegat01/addon-amr2mqtt/graphs/contributors
 [discord-ha]: https://discord.gg/c5DvZ4e
 [forum-centralcommand]: https://community.home-assistant.io/u/CentralCommand/?u=CentralCommand
-[forum]: https://community.home-assistant.io/t/home-assistant-add-on-hedgedoc/296809?u=CentralCommand
-[issue]: https://github.com/mdegat01/addon-hedgedoc/issues
+[forum]: https://community.home-assistant.io
+[issue]: https://github.com/mdegat01/addon-amr2mqtt/issues
 [mdegat01]: https://github.com/mdegat01
 [ragingcomputer]: https://github.com/ragingcomputer
-[releases]: https://github.com/mdegat01/addon-hedgedoc/releases
+[releases]: https://github.com/mdegat01/addon-amr2mqtt/releases
 [semver]: http://semver.org/spec/v2.0.0

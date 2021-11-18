@@ -6,6 +6,6 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: docker
-    directory: "/amridm2mqtt"
+    directory: "/amr2mqtt"
     schedule:
       interval: daily

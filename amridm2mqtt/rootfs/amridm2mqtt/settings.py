@@ -62,7 +62,7 @@ else:
 # Set the MQTT base topic with the user's prefix if provided
 MQTT_DEFAULT_BASE_TOPIC = "readings"
 if os.environ.get("MQTT_BASE_TOPIC"):
-    MQTT_BASE_TOPIC = f'${os.environ.get("MQTT_BASE_TOPIC")}/${MQTT_DEFAULT_BASE_TOPIC}'
+    MQTT_BASE_TOPIC = f'{os.environ.get("MQTT_BASE_TOPIC")}/{MQTT_DEFAULT_BASE_TOPIC}'
 else:
     MQTT_BASE_TOPIC = MQTT_DEFAULT_BASE_TOPIC
 

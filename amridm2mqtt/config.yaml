@@ -19,7 +19,6 @@ map:
 options:
   watched_meters: []
   wh_multiplier: 1000
-  readings_per_hour: 12
   message_types:
     - scm
   mqtt: {}
@@ -27,7 +26,7 @@ schema:
   watched_meters:
     - int
   wh_multiplier: int(1,)
-  readings_per_hour: int(1,)
+  readings_per_hour: int(1,)?
   message_types:
     - list(scm|idm)
   mqtt:

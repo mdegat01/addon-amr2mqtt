@@ -14,26 +14,17 @@ import subprocess
 import signal
 import sys
 import time
-import paho.mqtt.publish as publish
+import paho.mqtt.client as mqtt
 import settings
 
 
 def shutdown(**_):
-    """Uses signal to shutdown and hard kill opened processes and self."""
+    """Disconnect MQTT client and send signal to shutdown and hard kill opened processes."""
+    mqttc.disconnect()
     rtlamr.send_signal(15)
     time.sleep(1)
     rtlamr.send_signal(9)
     sys.exit(0)
-
-
-signal.signal(signal.SIGTERM, shutdown)
-signal.signal(signal.SIGINT, shutdown)
-
-# stores last interval id to avoid duplication, includes getter and setter
-last_reading = {}
-
-logging.basicConfig()
-logging.getLogger().setLevel(settings.LOG_LEVEL)
 
 
 def get_last_interval(meter_id):  # pylint: disable=redefined-outer-name
@@ -46,27 +37,16 @@ def set_last_interval(meter_id, interval_id):  # pylint: disable=redefined-outer
     last_reading[meter_id] = interval_id
 
 
-def send_mqtt(
-    topic,
-    payload,
-):
-    """Send data to MQTT broker defined in settings."""
-    try:
-        publish.single(
-            topic,
-            payload=payload,
-            qos=1,
-            hostname=settings.MQTT_HOST,
-            port=settings.MQTT_PORT,
-            auth=settings.MQTT_AUTH,
-            tls=settings.MQTT_TLS,
-            client_id=settings.MQTT_CLIENT_ID,
-        )
-    except Exception as ex:  # pylint: disable=broad-except
-        logging.error("MQTT Publish Failed: %s", str(ex))
+# Register signals we listen for
+signal.signal(signal.SIGTERM, shutdown)
+signal.signal(signal.SIGINT, shutdown)
 
+# stores last interval id to avoid duplication, includes getter and setter
+last_reading = {}
 
-time.sleep(5)
+# Set up logging
+logging.basicConfig()
+logging.getLogger().setLevel(settings.LOG_LEVEL)
 
 # start the rtlamr program.
 rtlamr_cmd = [settings.RTLAMR, f"-msgtype={settings.MESSAGE_TYPES}", "-format=csv"]
@@ -81,6 +61,29 @@ rtlamr = subprocess.Popen(
     universal_newlines=True,
 )
 
+# Create MQTT client and add TLS and auth if necessary
+mqttc = mqtt.Client(client_id=settings.MQTT_CLIENT_ID)
+
+if settings.MQTT_CA_CERT:
+    mqttc.tls_set(
+        ca_certs=settings.MQTT_CA_CERT,
+        certfile=settings.MQTT_CERTFILE,
+        keyfile=settings.MQTT_KEYFILE,
+    )
+
+if settings.MQTT_USERNAME:
+    mqttc.username_pw_set(
+        settings.MQTT_USERNAME,
+        password=settings.MQTT_PASSWORD,
+    )
+
+mqttc.connect(
+    settings.MQTT_HOST,
+    port=settings.MQTT_PORT,
+    keepalive=60,
+)
+
+mqttc.loop_start()
 while True:
     try:
         amrline = rtlamr.stdout.readline().strip()
@@ -124,7 +127,10 @@ while True:
             )
 
             logging.debug("Sending meter %s rate: %s", meter_id, rate)
-            send_mqtt(f"{settings.MQTT_BASE_TOPIC}/{meter_id}/meter_rate", str(rate))
+            mqttc.publish(
+                f"{settings.MQTT_BASE_TOPIC}/{meter_id}/meter_rate",
+                str(rate),
+            )
 
             # store interval ID to avoid duplicating data
             set_last_interval(meter_id, interval_cur)
@@ -133,7 +139,7 @@ while True:
         current_reading_in_kwh = (read_cur * settings.WH_MULTIPLIER) / 1000
 
         logging.debug("Sending meter %s reading: %s", meter_id, current_reading_in_kwh)
-        send_mqtt(
+        mqttc.publish(
             f"{settings.MQTT_BASE_TOPIC}/{meter_id}/meter_reading",
             str(current_reading_in_kwh),
         )

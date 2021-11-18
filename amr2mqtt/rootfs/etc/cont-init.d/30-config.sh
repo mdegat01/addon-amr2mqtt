@@ -5,6 +5,9 @@
 # This validates config and sets up app files/folders
 # ==============================================================================
 
+declare host
+declare port
+
 # -- CONFIG SUGGESTIONS/VALIDATIONS ---
 bashio::log.debug "Validate config and look for suggestions"
 
@@ -46,3 +49,20 @@ else
         bashio::addon.option 'mqtt.key'
     fi
 fi
+if ! bashio::config.exists 'mqtt.username'; then
+    if bashio::config.exists 'mqtt.password'; then
+        bashio::log.warning "Invalid option: 'mqtt.password' set without 'mqtt.username'. Removing..."
+        bashio::addon.option 'mqtt.password'
+    fi
+fi
+
+# --- ENSURE MQTT BROKER IS REACHABLE ---
+if ! bashio::config.is_empty 'mqtt.host'; then
+    host=$(bashio::config 'mqtt.host')
+    port=$(bashio::config 'mqtt.port' 1883)
+else
+    host=$(bashio::services 'mqtt' 'host')
+    port=$(bashio::services 'mqtt' 'port')
+fi
+bashio::log.info "Ensure MQTT broker is reachable at ${host}:${port} (60s timeout)"
+bashio::net.wait_for "${port}" "${host}"

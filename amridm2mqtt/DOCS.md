@@ -37,8 +37,8 @@ TODO
 
 Example add-on configuration:
 
-```
-TODO
+```yaml
+# TODO
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_

@@ -28,7 +28,7 @@ schema:
     - int
   wh_multiplier: int(1,)
   readings_per_hour: int(1,)
-  message_type:
+  message_types:
     - list(scm,idm)
   mqtt:
     host: str?

@@ -12,8 +12,8 @@ declare password
 
 # --- LOAD BASIC SETTINGS ---
 bashio::log.debug "Loading basic settings..."
-export "WH_MULTIPLIER=$(bashio::config 'wh_multiplier')"
-export "READINGS_PER_HOUR=$(bashio::config 'readings_per_hour')"
+export "READING_MULTIPLIER=$(bashio::config 'reading_multiplier' 1)"
+export "READINGS_PER_HOUR=$(bashio::config 'readings_per_hour' 12)"
 
 IFS=","
 export "WATCHED_METERS=$(bashio::config 'watched_meters')"

@@ -47,7 +47,7 @@ Example add-on configuration:
 
 TODO
 
-### Option: `wh_multiplier`
+### Option: `reading_multiplier`
 
 TODO
 

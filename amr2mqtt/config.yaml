@@ -18,14 +18,15 @@ map:
   - ssl
 options:
   watched_meters: []
-  wh_multiplier: 1000
+  reading_multiplier: 1.0
   message_types:
     - scm
+    - idm
   mqtt: {}
 schema:
   watched_meters:
     - int
-  wh_multiplier: int(1,)
+  reading_multiplier: float(0,)?
   readings_per_hour: int(1,)?
   message_types:
     - list(scm|idm)

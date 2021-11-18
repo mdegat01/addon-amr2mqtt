@@ -4,11 +4,10 @@ import os
 import logging
 
 # List of the Meter IDs to watch
-# Use empty brackets to read all meters - []
-# List may contain only one entry - [12345678]
-# or multiple entries - [12345678, 98765432, 12340123]
-power_meters = os.environ["WATCHED_METERS"].split(",")
-WATCHED_METERS = [int(meter_id) for meter_id in power_meters if meter_id]
+# Use empty string to read all meters
+# List may contain only one entry - "12345678"
+# or multiple entries - "12345678,98765432,12340123"
+WATCHED_METERS = os.environ["WATCHED_METERS"]
 
 # List of message types to watch for
 # Must be provided as only specific types are supported right now

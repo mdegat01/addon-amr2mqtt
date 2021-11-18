@@ -86,8 +86,14 @@ rtltcp = subprocess.Popen(
 time.sleep(10)
 
 # start the rtlamr program.
+rtlamr_cmd = [settings.RTLAMR, f"-msgtype={settings.MESSAGE_TYPES}", "-format=csv"]
+
+# Add ID filter if we have a list of IDs to watch
+if settings.WATCHED_METERS:
+    rtlamr_cmd += [f"-filterid={settings.WATCHED_METERS}"]
+
 rtlamr = subprocess.Popen(
-    [settings.RTLAMR, f"-msgtype={settings.MESSAGE_TYPES}", "-format=csv"],
+    rtlamr_cmd,
     stdout=subprocess.PIPE,
     universal_newlines=True,
 )
@@ -116,10 +122,6 @@ while True:
 
         # invalid message or unsupported message type
         else:
-            continue
-
-        # make sure the meter id is one we want
-        if settings.WATCHED_METERS and meter_id not in settings.WATCHED_METERS:
             continue
 
         # Process interval if message type supports it (IDM)

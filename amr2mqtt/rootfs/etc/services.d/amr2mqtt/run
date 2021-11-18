@@ -24,7 +24,7 @@ unset IFS
 bashio::log.debug "Setting MQTT details..."
 if ! bashio::config.is_empty 'mqtt.host'; then
     host=$(bashio::config 'mqtt.host')
-    port=$(bashio::config 'mqtt.port')
+    port=$(bashio::config 'mqtt.port' 1883)
     username=$(bashio::config 'mqtt.username')
     password=$(bashio::config 'mqtt.password')
 else

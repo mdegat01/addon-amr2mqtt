@@ -123,7 +123,9 @@ while True:
             # take the last interval usage times 10 to get watt-hours,
             # then times 12 to get average usage in watts
             rate = (
-                interval_read_cur * settings.WH_MULTIPLIER * settings.READINGS_PER_HOUR
+                interval_read_cur
+                * settings.READING_MULTIPLIER
+                * settings.READINGS_PER_HOUR
             )
 
             logging.debug("Sending meter %s rate: %s", meter_id, rate)
@@ -136,7 +138,7 @@ while True:
             set_last_interval(meter_id, interval_cur)
 
         # Send current reading to MQTT
-        current_reading_in_kwh = (read_cur * settings.WH_MULTIPLIER) / 1000
+        current_reading_in_kwh = read_cur * settings.READING_MULTIPLIER
 
         logging.debug("Sending meter %s reading: %s", meter_id, current_reading_in_kwh)
         mqttc.publish(

@@ -14,15 +14,15 @@ WATCHED_METERS = os.environ["WATCHED_METERS"]
 # See differences here: https://github.com/bemasher/rtlamr#message-types
 MESSAGE_TYPES = os.environ["MESSAGE_TYPES"]
 
-# multiplier to get reading to Watt Hours (Wh)
+# multiplier to get reading to desired units
 # examples:
-#   for meter providing readings in kWh
-#      MULTIPLIER = 1000
-#   for meter providing readings in kWh
-#   with 2 extra digits of precision
-#      MULTIPLIER = 10
+#   for meter providing readings in desired units currently
+#      MULTIPLIER = 1
+#   for meter providing readings with 2 extra digits of precision
+#        Ex. Hundreds of a kWh instead of just kWh
+#      MULTIPLIER = 0.01
 # MULTIPLIER needs to be a number
-WH_MULTIPLIER = int(os.environ.get("WH_MULTIPLIER", 1000))
+READING_MULTIPLIER = int(os.environ.get("READING_MULTIPLIER"))
 
 # number of IDM intervals per hour reported by the meter
 # examples:
@@ -32,7 +32,7 @@ WH_MULTIPLIER = int(os.environ.get("WH_MULTIPLIER", 1000))
 #   for meter providing readings every 15 minutes
 #   or 12 times every hour
 #     READINGS_PER_HOUR = 4
-READINGS_PER_HOUR = int(os.environ.get("READINGS_PER_HOUR", 12))
+READINGS_PER_HOUR = int(os.environ.get("READINGS_PER_HOUR"))
 
 # Get server, TLS and auth settings
 MQTT_HOST = os.environ.get("MQTT_HOST")

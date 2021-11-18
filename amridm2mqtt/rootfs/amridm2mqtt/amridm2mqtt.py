@@ -75,19 +75,19 @@ def send_mqtt(
 
 # start the rtl_tcp program
 rtltcp = subprocess.Popen(
-    [settings.RTL_TCP + " > /dev/null 2>&1 &"],
+    [f"{settings.RTL_TCP} > /dev/null 2>&1 &"],
     shell=True,
     stdin=None,
     stdout=None,
     stderr=None,
     close_fds=True,
 )
+
 time.sleep(10)
 
 # start the rtlamr program.
-rtlamr_cmd = [settings.RTLAMR, f"-msgtype=${settings.MESSAGE_TYPES}", "-format=csv"]
 rtlamr = subprocess.Popen(
-    rtlamr_cmd,
+    [settings.RTLAMR, f"-msgtype={settings.MESSAGE_TYPES}", "-format=csv"],
     stdout=subprocess.PIPE,
     universal_newlines=True,
 )
@@ -138,7 +138,7 @@ while True:
             )
 
             logging.debug("Sending meter %s rate: %s", meter_id, rate)
-            send_mqtt(f"${settings.MQTT_BASE_TOPIC}/${meter_id}/meter_rate", str(rate))
+            send_mqtt(f"{settings.MQTT_BASE_TOPIC}/{meter_id}/meter_rate", str(rate))
 
             # store interval ID to avoid duplicating data
             set_last_interval(meter_id, interval_cur)
@@ -148,7 +148,7 @@ while True:
 
         logging.debug("Sending meter %s reading: %s", meter_id, current_reading_in_kwh)
         send_mqtt(
-            f"${settings.MQTT_BASE_TOPIC}/${meter_id}/meter_reading",
+            f"{settings.MQTT_BASE_TOPIC}/{meter_id}/meter_reading",
             str(current_reading_in_kwh),
         )
 

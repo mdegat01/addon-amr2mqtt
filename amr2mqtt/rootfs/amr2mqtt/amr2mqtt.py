@@ -20,10 +20,8 @@ import settings
 
 def shutdown(**_):
     """Uses signal to shutdown and hard kill opened processes and self."""
-    rtltcp.send_signal(15)
     rtlamr.send_signal(15)
     time.sleep(1)
-    rtltcp.send_signal(9)
     rtlamr.send_signal(9)
     sys.exit(0)
 
@@ -73,17 +71,7 @@ def send_mqtt(
         logging.error("MQTT Publish Failed: %s", str(ex))
 
 
-# start the rtl_tcp program
-rtltcp = subprocess.Popen(
-    [f"{settings.RTL_TCP} > /dev/null 2>&1 &"],
-    shell=True,
-    stdin=None,
-    stdout=None,
-    stderr=None,
-    close_fds=True,
-)
-
-time.sleep(10)
+time.sleep(5)
 
 # start the rtlamr program.
 rtlamr_cmd = [settings.RTLAMR, f"-msgtype={settings.MESSAGE_TYPES}", "-format=csv"]

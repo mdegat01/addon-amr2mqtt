@@ -1,0 +1,10 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Add-on: AMR2MQTT
+# Runs rtl_tcp 
+# ==============================================================================
+
+bashio::log.info 'Starting rtl_tcp daemon...'
+exec s6-setuidgid abc \
+    /usr/bin/rtl_tcp

@@ -32,11 +32,6 @@ signal.signal(signal.SIGINT, shutdown)
 # stores last interval id to avoid duplication, includes getter and setter
 last_reading = {}
 
-if len(settings.MQTT_USER) and len(settings.MQTT_PASSWORD):
-    AUTH = {"username": settings.MQTT_USER, "password": settings.MQTT_PASSWORD}
-else:
-    AUTH = None
-
 logging.basicConfig()
 logging.getLogger().setLevel(settings.LOG_LEVEL)
 
@@ -63,7 +58,7 @@ def send_mqtt(
             qos=1,
             hostname=settings.MQTT_HOST,
             port=settings.MQTT_PORT,
-            auth=AUTH,
+            auth=settings.MQTT_AUTH,
             tls=settings.MQTT_TLS,
             client_id=settings.MQTT_CLIENT_ID,
         )

@@ -22,7 +22,7 @@ MESSAGE_TYPES = os.environ["MESSAGE_TYPES"]
 #        Ex. Hundreds of a kWh instead of just kWh
 #      MULTIPLIER = 0.01
 # MULTIPLIER needs to be a number
-READING_MULTIPLIER = int(os.environ.get("READING_MULTIPLIER"))
+READING_MULTIPLIER = float(os.environ.get("READING_MULTIPLIER"))
 
 # number of IDM intervals per hour reported by the meter
 # examples:

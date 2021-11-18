@@ -96,6 +96,7 @@ while True:
     try:
         amrline = rtlamr.stdout.readline().strip()
         flds = amrline.split(",")
+        interval_cur = None
 
         # proper IDM results have 66 fields
         if len(flds) == 66:

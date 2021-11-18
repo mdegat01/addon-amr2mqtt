@@ -18,7 +18,7 @@ import paho.mqtt.publish as publish
 import settings
 
 
-def shutdown():
+def shutdown(**_):
     """Uses signal to shutdown and hard kill opened processes and self."""
     rtltcp.send_signal(15)
     rtlamr.send_signal(15)
@@ -82,10 +82,10 @@ rtltcp = subprocess.Popen(
     stderr=None,
     close_fds=True,
 )
-time.sleep(5)
+time.sleep(10)
 
 # start the rtlamr program.
-rtlamr_cmd = [settings.RTLAMR, "-msgtype=idm", "-format=csv"]
+rtlamr_cmd = [settings.RTLAMR, f"-msgtype=${settings.MESSAGE_TYPES}", "-format=csv"]
 rtlamr = subprocess.Popen(
     rtlamr_cmd,
     stdout=subprocess.PIPE,
@@ -97,25 +97,35 @@ while True:
         amrline = rtlamr.stdout.readline().strip()
         flds = amrline.split(",")
 
-        if len(flds) != 66:
-            # proper IDM results have 66 fields
+        # proper IDM results have 66 fields
+        if len(flds) == 66:
+            # get some required info: meter ID, current meter reading,
+            # current interval id, most recent interval usage
+            meter_id = int(flds[9])
+
+            read_cur = int(flds[15])
+            interval_cur = int(flds[10])
+            interval_read_cur = int(flds[16])
+
+        # proper SCM results have 9 fields
+        elif len(flds) == 9:
+            # get some required info: meter ID, current meter reading,
+            meter_id = int(flds[9])
+            read_cur = int(flds[7])
+
+        # invalid message or unsupported message type
+        else:
             continue
 
         # make sure the meter id is one we want
-        meter_id = int(flds[9])
         if settings.WATCHED_METERS and meter_id not in settings.WATCHED_METERS:
             continue
 
-        # get some required info: current meter reading,
-        # current interval id, most recent interval usage
-        read_cur = int(flds[15])
-        interval_cur = int(flds[10])
-        idm_read_cur = int(flds[16])
-
-        # retreive the interval id of the last time we sent to MQTT
-        interval_last = get_last_interval(meter_id)
-
-        if interval_cur != interval_last:
+        # Process interval if message type supports it (IDM)
+        if interval_cur:
+            # skip if interval is the same as last time we sent to MQTT
+            if interval_cur == get_last_interval(meter_id):
+                continue
 
             # as observed on on my meter...
             # using values set in settings...
@@ -123,16 +133,8 @@ while True:
             # measured in hundredths of a kilowatt hour
             # take the last interval usage times 10 to get watt-hours,
             # then times 12 to get average usage in watts
-            rate = idm_read_cur * settings.WH_MULTIPLIER * settings.READINGS_PER_HOUR
-
-            current_reading_in_kwh = (read_cur * settings.WH_MULTIPLIER) / 1000
-
-            logging.debug(
-                "Sending meter %s reading: %s", meter_id, current_reading_in_kwh
-            )
-            send_mqtt(
-                f"${settings.MQTT_BASE_TOPIC}/${meter_id}/meter_reading",
-                str(current_reading_in_kwh),
+            rate = (
+                interval_read_cur * settings.WH_MULTIPLIER * settings.READINGS_PER_HOUR
             )
 
             logging.debug("Sending meter %s rate: %s", meter_id, rate)
@@ -140,6 +142,15 @@ while True:
 
             # store interval ID to avoid duplicating data
             set_last_interval(meter_id, interval_cur)
+
+        # Send current reading to MQTT
+        current_reading_in_kwh = (read_cur * settings.WH_MULTIPLIER) / 1000
+
+        logging.debug("Sending meter %s reading: %s", meter_id, current_reading_in_kwh)
+        send_mqtt(
+            f"${settings.MQTT_BASE_TOPIC}/${meter_id}/meter_reading",
+            str(current_reading_in_kwh),
+        )
 
     except Exception as ex:  # pylint: disable=broad-except
         logging.debug("Exception squashed! %s: %s", ex.__class__.__name__, ex)

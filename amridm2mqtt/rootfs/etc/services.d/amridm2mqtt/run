@@ -17,6 +17,7 @@ export "READINGS_PER_HOUR=$(bashio::config 'readings_per_hour')"
 
 IFS=","
 export "WATCHED_METERS=$(bashio::config 'watched_meters')"
+export "MESSAGE_TYPES=$(bashio::config 'message_types')"
 unset IFS
 
 # --- LOAD MQTT SETTINGS ---

@@ -23,7 +23,7 @@ export "WATCHED_METERS=${meters//$'\n'/,}"
 if bashio::config.exists 'discovery_mode'; then
     discovery_format=$(bashio::config 'discovery_mode')
     bashio::log.info "Discovery mode enabled. Logging all messages in ${discovery_format}."
-    export "MESSAGE_TYPES=all"
+    export "MESSAGE_TYPES=scm,scm+,idm,netidm,r900,r900bcd"
     export "DISCOVERY_FORMAT=${discovery_format}"
 else
     msg_types=$(bashio::config 'message_types')

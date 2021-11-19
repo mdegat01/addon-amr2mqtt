@@ -15,7 +15,7 @@
 [![GitHub Activity][commits-shield]][commits]
 [![Community Forum][forum-shield]][forum]
 
-_Runs rtlamr to read IDM power meter data and send to MQTT broker._
+_Runs rtlamr to read meter data and send to MQTT broker._
 
 [![Open your Home Assistant instance and show the add add-on repository dialog
 with a specific repository URL pre-filled.][add-repo-shield]][add-repo]

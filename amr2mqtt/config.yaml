@@ -29,7 +29,7 @@ schema:
   reading_multiplier: float(0,)?
   readings_per_hour: int(1,)?
   message_types:
-    - list(scm|idm)
+    - list(idm|r900|scm|scm+)
   discovery_mode: list(plain|csv)?
   mqtt:
     host: str?

@@ -110,7 +110,7 @@ MQTT so you can convert to the unit you actually see on your bill.
 ### Option: `message_types`
 
 Message type(s) your meter(s) use, will not read and process others. Supported options
-are `scm` and `idm`.
+are `idm`, `r900`, `scm`, and `scm+`.
 
 **Note**: _`rtlamr` supports other [protocols][msg-protocols], if you think
 your meter uses one see [unsupported message types](#unsupported-message-types)._

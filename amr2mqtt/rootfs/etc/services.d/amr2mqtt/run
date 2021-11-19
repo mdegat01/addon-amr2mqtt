@@ -9,18 +9,6 @@ declare host
 declare port
 declare username
 declare password
-declare meters
-declare msg_types
-
-# --- LOAD BASIC SETTINGS ---
-bashio::log.debug "Loading basic settings..."
-export "READING_MULTIPLIER=$(bashio::config 'reading_multiplier' 1)"
-
-meters=$(bashio::config 'watched_meters')
-export "WATCHED_METERS=${meters//$'\n'/,}"
-
-msg_types=$(bashio::config 'message_types')
-export "MESSAGE_TYPES=${msg_types//$'\n'/,}"
 
 # --- LOAD MQTT SETTINGS ---
 bashio::log.debug "Setting MQTT details..."

@@ -2,27 +2,29 @@
 """
 import os
 import logging
+import json
+import functools
 
-# List of the Meter IDs to watch
-# Use empty string to read all meters
-# List may contain only one entry - "12345678"
-# or multiple entries - "12345678,98765432,12340123"
-WATCHED_METERS = os.environ["WATCHED_METERS"]
 
-# List of message types to watch for
-# Must be provided as only specific types are supported right now
-# See differences here: https://github.com/bemasher/rtlamr#message-types
-MESSAGE_TYPES = os.environ["MESSAGE_TYPES"]
+def make_meters_map(meters, meter):
+    """Add meter to meters by its ID."""
+    meters[str(meter["id"])] = meter
+    del meter["id"]
+    return meters
 
-# multiplier to get reading to desired units
-# examples:
-#   for meter providing readings in desired units currently
-#      MULTIPLIER = 1
-#   for meter providing readings with 2 extra digits of precision
-#        Ex. Hundreds of a kWh instead of just kWh
-#      MULTIPLIER = 0.01
-# MULTIPLIER needs to be a number
-READING_MULTIPLIER = float(os.environ.get("READING_MULTIPLIER"))
+
+# Pull in watched meters data
+# If not empty, pull out IDs/protocols to watch
+# If empty then we're in discovery mode
+config_options = open("/data/options.json")
+meters_config = json.load(config_options)["meters"]
+
+if meters_config:
+    METERS = functools.reduce(make_meters_map, meters_config, {})
+    WATCHED_METERS = ",".join(METERS.keys())
+    WATCHED_PROTOCOLS = ",".join(set([meter.protocol for meter in METERS]))
+else:
+    WATCHED_PROTOCOLS = "all"
 
 # Get server, TLS and auth settings
 MQTT_HOST = os.environ.get("MQTT_HOST")
@@ -34,14 +36,12 @@ MQTT_USERNAME = os.environ.get("MQTT_USERNAME")
 MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD")
 MQTT_CLIENT_ID = os.environ.get("MQTT_CLIENT_ID")
 
-# Set the MQTT base topic with the user's prefix if provided
-MQTT_DEFAULT_BASE_TOPIC = "readings"
+# Set the MQTT base topic
+MQTT_DEFAULT_BASE_TOPIC = "amr2mqtt"
 if os.environ.get("MQTT_BASE_TOPIC"):
-    MQTT_BASE_TOPIC = f'{os.environ.get("MQTT_BASE_TOPIC")}/{MQTT_DEFAULT_BASE_TOPIC}'
-else:
-    MQTT_BASE_TOPIC = MQTT_DEFAULT_BASE_TOPIC
+    MQTT_BASE_TOPIC = os.environ.get("MQTT_BASE_TOPIC")
 
-# Set logging level
+# Set up logging
 EV_TO_LOG_LEVEL = {
     "DEBUG": logging.DEBUG,
     "INFO": logging.INFO,
@@ -49,7 +49,9 @@ EV_TO_LOG_LEVEL = {
     "ERROR": logging.ERROR,
     "CRITICAL": logging.CRITICAL,
 }
-LOG_LEVEL = EV_TO_LOG_LEVEL.get(os.environ.get("LOG_LEVEL"))
+log_level = EV_TO_LOG_LEVEL.get(os.environ.get("LOG_LEVEL"))
+logging.basicConfig()
+logging.getLogger().setLevel(log_level)
 
 # path to rtlamr
 RTLAMR = "/usr/bin/rtlamr"

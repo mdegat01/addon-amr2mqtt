@@ -171,11 +171,11 @@ If you believe you have a device sending out messages of a type this add-on does
 not support that you think should be supported please do the following:
 
 1. Add `discovery_mode: plain` to the add-on config
-2. Ensure `log_level` is set to `info` or `debug`
-3. Run add-on until you see your meter ID in the log. Save the log line.
-4. Change `discovery_mode` to `csv` and repeat #3.
-5. Create an [issue][issue] requesting support for your format.
-6. Put both log lines (csv and plain format) in the issue.
+1. Ensure `log_level` is set to `info` or `debug`
+1. Run add-on until you see your meter ID in the log. Save the log line.
+1. Change `discovery_mode` to `csv` and repeat #3.
+1. Create an [issue][issue] requesting support for your format.
+1. Put both log lines (csv and plain format) in the issue.
 
 I need both formats so I can see the message type and field names and then which
 columns those fields go in when in CSV format.

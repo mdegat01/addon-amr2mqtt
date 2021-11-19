@@ -62,7 +62,7 @@ for var in $(bashio::config 'meters|keys'); do
     id=$(bashio::config "meters[${var}].id")
     ids="${ids} ${id}"
 done
-uniq_ids=$(ids | tr ' ' '\n' | awk '!arr[$1]++' | tr '\n' ' ' | xargs)
+uniq_ids=$(echo "${ids}" | tr ' ' '\n' | awk '!arr[$1]++' | tr '\n' ' ' | xargs)
 
 if [ "${ids}" != "${uniq_ids}" ]; then
     bashio::log.fatal

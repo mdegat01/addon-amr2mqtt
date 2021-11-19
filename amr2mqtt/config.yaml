@@ -17,19 +17,16 @@ services:
 map:
   - ssl
 options:
-  watched_meters: []
-  reading_multiplier: 1.0
-  message_types:
-    - scm
-    - idm
+  meters: []
   mqtt: {}
 schema:
-  watched_meters:
-    - int
-  reading_multiplier: float(0,)?
-  readings_per_hour: int(1,)?
-  message_types:
-    - list(idm|r900|scm|scm+)
+  meters:
+    - id: int
+      protocol: list(idm|netidm|r900|scm|scm+)
+      name: str?
+      type: list(gas|water|electric)?
+      reading_multiplier: float(0,)?
+      reading_unit_of_measurement: str?
   mqtt:
     host: str?
     port: port?

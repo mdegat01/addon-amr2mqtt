@@ -56,6 +56,22 @@ if ! bashio::config.exists 'mqtt.username'; then
     fi
 fi
 
+# --- ENSURE NO DUPLICATE IDS IN METERS ---
+ids=''
+for var in $(bashio::config 'meters|keys'); do
+    id=$(bashio::config "meters[${var}].id")
+    ids="${ids} ${id}"
+done
+uniq_ids=$(ids | tr ' ' '\n' | awk '!arr[$1]++' | tr '\n' ' ' | xargs)
+
+if [ "${ids}" != "${uniq_ids}" ]; then
+    bashio::log.fatal
+    bashio::log.fatal "'meters' has two entries with the same ID!"
+    bashio::log.fatal "Cannot have duplicate IDs in the list of meters to watch."
+    bashio::log.fatal
+    bashio::exit.nok
+fi
+
 # --- ENSURE MQTT BROKER IS REACHABLE ---
 if ! bashio::config.is_empty 'mqtt.host'; then
     host=$(bashio::config 'mqtt.host')

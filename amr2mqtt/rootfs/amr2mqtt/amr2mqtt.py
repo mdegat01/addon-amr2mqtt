@@ -49,7 +49,11 @@ logging.basicConfig()
 logging.getLogger().setLevel(settings.LOG_LEVEL)
 
 # start the rtlamr program.
-rtlamr_cmd = [settings.RTLAMR, f"-msgtype={settings.MESSAGE_TYPES}", "-format=csv"]
+rtlamr_cmd = [
+    settings.RTLAMR,
+    f"-msgtype={settings.MESSAGE_TYPES}",
+    f"-format={settings.MESSAGE_FORMAT}",
+]
 
 # Add ID filter if we have a list of IDs to watch
 if settings.WATCHED_METERS:
@@ -87,6 +91,12 @@ mqttc.loop_start()
 while True:
     try:
         amrline = rtlamr.stdout.readline().strip()
+
+        # If in discovery mode, just log the line and continue
+        if settings.DISCOVERY_MODE:
+            logging.info(amrline)
+            continue
+
         flds = amrline.split(",")
         interval_cur = None
 
@@ -95,16 +105,17 @@ while True:
             # get some required info: meter ID, current meter reading,
             # current interval id, most recent interval usage
             meter_id = int(flds[9])
-
             read_cur = int(flds[15])
             interval_cur = int(flds[10])
             interval_read_cur = int(flds[16])
+            msgtype = "IDM"
 
         # proper SCM results have 9 fields
         elif len(flds) == 9:
             # get some required info: meter ID, current meter reading,
             meter_id = int(flds[3])
             read_cur = int(flds[7])
+            msgtype = "SCM"
 
         # invalid message or unsupported message type
         else:
@@ -116,34 +127,34 @@ while True:
             if interval_cur == get_last_interval(meter_id):
                 continue
 
-            # as observed on on my meter...
-            # using values set in settings...
-            # each idm interval is 5 minutes (12x per hour),
-            # measured in hundredths of a kilowatt hour
-            # take the last interval usage times 10 to get watt-hours,
-            # then times 12 to get average usage in watts
-            rate = (
-                interval_read_cur
-                * settings.READING_MULTIPLIER
-                * settings.READINGS_PER_HOUR
-            )
+            current_interval = interval_read_cur * settings.READING_MULTIPLIER
 
-            logging.debug("Sending meter %s rate: %s", meter_id, rate)
+            logging.debug(
+                "Meter: %s, MsgType: %s, Rate: %s",
+                meter_id,
+                msgtype,
+                current_interval,
+            )
             mqttc.publish(
-                f"{settings.MQTT_BASE_TOPIC}/{meter_id}/meter_rate",
-                str(rate),
+                f"{settings.MQTT_BASE_TOPIC}/{meter_id}/interval_reading",
+                str(current_interval),
             )
 
             # store interval ID to avoid duplicating data
             set_last_interval(meter_id, interval_cur)
 
         # Send current reading to MQTT
-        current_reading_in_kwh = read_cur * settings.READING_MULTIPLIER
+        current_reading = read_cur * settings.READING_MULTIPLIER
 
-        logging.debug("Sending meter %s reading: %s", meter_id, current_reading_in_kwh)
+        logging.debug(
+            "Meter: %s, MsgType: %s, Reading: %s",
+            meter_id,
+            msgtype,
+            current_reading,
+        )
         mqttc.publish(
             f"{settings.MQTT_BASE_TOPIC}/{meter_id}/meter_reading",
-            str(current_reading_in_kwh),
+            str(current_reading),
         )
 
     except Exception as ex:  # pylint: disable=broad-except

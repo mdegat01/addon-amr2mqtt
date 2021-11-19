@@ -30,7 +30,6 @@ schema:
   readings_per_hour: int(1,)?
   message_types:
     - list(idm|r900|scm|scm+)
-  discovery_mode: list(plain|csv)?
   mqtt:
     host: str?
     port: port?

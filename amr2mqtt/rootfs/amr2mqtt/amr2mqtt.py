@@ -52,7 +52,7 @@ logging.getLogger().setLevel(settings.LOG_LEVEL)
 rtlamr_cmd = [
     settings.RTLAMR,
     f"-msgtype={settings.MESSAGE_TYPES}",
-    f"-format={settings.MESSAGE_FORMAT}",
+    "-format=csv",
 ]
 
 # Add ID filter if we have a list of IDs to watch
@@ -91,12 +91,6 @@ mqttc.loop_start()
 while True:
     try:
         amrline = rtlamr.stdout.readline().strip()
-
-        # If in discovery mode, just log the line and continue
-        if settings.DISCOVERY_MODE and amrline:
-            logging.info(amrline)
-            continue
-
         flds = amrline.split(",")
         interval_cur = None
 

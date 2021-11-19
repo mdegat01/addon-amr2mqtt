@@ -13,7 +13,6 @@ include:
 - Meter does not broadcast consumption information, it just displays it
 - Broadcasts by your meter are encrypted and cannot be used
 - Meter only broadcasts once a month when the utility company pings it
-- Meter broadcasts in a format this add-on doesn't support (yet! [see below](#unsupported-message-types))
 
 So before beginning, check this list of [compatible meters][compatible-meters]
 and see if your meter is on there. It will have the manufacturer and model number
@@ -112,9 +111,6 @@ MQTT so you can convert to the unit you actually see on your bill.
 Message type(s) your meter(s) use, will not read and process others. Supported options
 are `idm`, `r900`, `scm`, and `scm+`.
 
-**Note**: _`rtlamr` supports other [protocols][msg-protocols], if you think
-your meter uses one see [unsupported message types](#unsupported-message-types)._
-
 ### Option: `mqtt.host`
 
 IP address or domain where your MQTT broker can be reached. Ex. `core-mosquitto`
@@ -159,31 +155,6 @@ Client ID to use when connecting to the MQTT broker.
 
 By default, the topics of all MQTT messages begins with `readings/{meter_ID}`.
 If you set this option then the topics will begin with `{mqtt.base_topic}/readings/{meter_id}`.
-
-## Unsupported Message Types
-
-The full list of message types supported by `rtlamr` can be found [here][msg-protocols].
-Currently this add-on only supports `scm` and `idm` however. That's simply because
-I have no access to meters which use these other protocols so I can't see
-what those kinds of messages look like.
-
-If you believe you have a meter using a protocol `rtlamr` supports but this add-on
-does not please do the following:
-
-1. Add `discovery_mode: plain` to the add-on config
-1. Ensure `log_level` is set to `info` or `debug`
-1. Run add-on until you see your meter ID in the log. Save the log line.
-1. Change `discovery_mode` to `csv` and repeat #3.
-1. Create an [issue][issue] requesting support for your format.
-1. Put both log lines (csv and plain format) in the issue.
-
-I need both formats so I can see the message type and field names and then which
-columns those fields go in when in CSV format.
-
-I would strongly recommend not leaving `watched_meters` empty when in discovery
-mode or your log will likely be **very** noisy.
-
-Remember to remove `discovery_mode` from the config after you are done!
 
 ## Changelog & Releases
 
@@ -258,7 +229,6 @@ SOFTWARE.
 [issue]: https://github.com/mdegat01/addon-amr2mqtt/issues
 [mdegat01]: https://github.com/mdegat01
 [mqtt-explorer]: https://mqtt-explorer.com/
-[msg-protocols]: https://github.com/bemasher/rtlamr/wiki/Protocol
 [nesdr-nano-2plus]: https://www.amazon.com/NooElec-NESDR-Nano-Ultra-Low-Compatible/dp/B01B4L48QU
 [ragingcomputer]: https://github.com/ragingcomputer
 [releases]: https://github.com/mdegat01/addon-amr2mqtt/releases

@@ -9,15 +9,23 @@ declare host
 declare port
 declare username
 declare password
+declare discovery_format
 
 # --- LOAD BASIC SETTINGS ---
 bashio::log.debug "Loading basic settings..."
 export "READING_MULTIPLIER=$(bashio::config 'reading_multiplier' 1)"
-export "READINGS_PER_HOUR=$(bashio::config 'readings_per_hour' 12)"
 
 IFS=","
 export "WATCHED_METERS=$(bashio::config 'watched_meters')"
-export "MESSAGE_TYPES=$(bashio::config 'message_types')"
+
+if bashio::config.exists 'discovery_mode'; then
+    discovery_format=$(bashio::config 'discovery_mode')
+    bashio::log.info "Discovery mode enabled. Logging all messages in ${discovery_format}."
+    export "MESSAGE_TYPES=all"
+    export "DISCOVERY_FORMAT=${discovery_format}"
+else
+    export "MESSAGE_TYPES=$(bashio::config 'message_types')"
+fi
 unset IFS
 
 # --- LOAD MQTT SETTINGS ---

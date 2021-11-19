@@ -14,6 +14,12 @@ WATCHED_METERS = os.environ["WATCHED_METERS"]
 # See differences here: https://github.com/bemasher/rtlamr#message-types
 MESSAGE_TYPES = os.environ["MESSAGE_TYPES"]
 
+# If in discovery mode we simply log everything at debug level
+DISCOVERY_MODE = MESSAGE_TYPES == "all"
+
+# Normally we want CSV but discovery mode lets people pick
+MESSAGE_FORMAT = os.environ["DISCOVERY_FORMAT"] if DISCOVERY_MODE else "csv"
+
 # multiplier to get reading to desired units
 # examples:
 #   for meter providing readings in desired units currently
@@ -23,16 +29,6 @@ MESSAGE_TYPES = os.environ["MESSAGE_TYPES"]
 #      MULTIPLIER = 0.01
 # MULTIPLIER needs to be a number
 READING_MULTIPLIER = float(os.environ.get("READING_MULTIPLIER"))
-
-# number of IDM intervals per hour reported by the meter
-# examples:
-#   for meter providing readings every 5 minutes
-#   or 12 times every hour
-#     READINGS_PER_HOUR = 12
-#   for meter providing readings every 15 minutes
-#   or 12 times every hour
-#     READINGS_PER_HOUR = 4
-READINGS_PER_HOUR = int(os.environ.get("READINGS_PER_HOUR"))
 
 # Get server, TLS and auth settings
 MQTT_HOST = os.environ.get("MQTT_HOST")

@@ -1,5 +1,28 @@
 # Home Assistant Add-on: AMR2MQTT
 
+## Before You Begin
+
+This add-on wants to collect consumption information being broadcast by the meter
+on your house using an [RTL-SDR dongle][rtl-sdr-dongle] and pass it to MQTT. Which
+means you'll need a dongle before you begin. I used a [NooElec NESDR Nano 2+][nesdr-nano-2plus]
+but others work fine as well.
+
+However note that this add-on does not work with all meters. Some potential problems
+include:
+
+- Meter does not broadcast consumption information, it just displays it
+- Broadcasts by your meter are encrypted and cannot be used
+- Meter only broadcasts once a month when the utility company pings it
+- Meter broadcasts in a format this add-on doesn't support (yet! see below)
+
+So before beginning, check this list of [compatible meters][compatible-meters]
+and see if your meter is on there. It will have the manufacturer and model number
+printed on it somewhere.
+
+This list isn't exhaustive so if you don't find your meter it may still work if
+you're willing to take a gamble and order a dongle anyway. But just bear in mind
+this solution is not universal and YMMV.
+
 ## Install
 
 First add the repository to the add-on store (`https://github.com/mdegat01/hassio-addons`):
@@ -7,7 +30,7 @@ First add the repository to the add-on store (`https://github.com/mdegat01/hassi
 [![Open your Home Assistant instance and show the add add-on repository dialog
 with a specific repository URL pre-filled.][add-repo-shield]][add-repo]
 
-Then find HedgeDoc in the store and click install:
+Then find AMR2MQTT in the store and click install:
 
 [![Open your Home Assistant instance and show the dashboard of a Supervisor add-on.][add-addon-shield]][add-addon]
 
@@ -26,76 +49,141 @@ If you prefer to use your own MQTT broker, you must fill in the `mqtt` options
 below. Please note there is no easy upgrade path between these two options.
 
 This addon will publish messages to the topics `readings/{meter_id}/meter_reading`
-and `readings/{meter_id}/meter_rate`. You can customize this by setting `mqtt.base_topic`
-below.
+and (IDM msgtype only) `readings/{meter_id}/interval_reading`. You can
+customize this by setting `mqtt.base_topic` (described below).
 
-## RTL-SDR Dongle Setup
+## Finding Your Meter
 
-TODO
+Your meter should have an ID on it somewhere. It should be decent length integer,
+mine was 8 digits. Mine was also on a sticker with a bar code, the big number
+right below it. I don't know if yours will have the same location but it will be
+on the device.
+
+If you're having trouble finding it set add this to your config:
+
+```yaml
+watched_meters: []
+msgtype:
+  - scm
+  - idm
+log_level: debug
+```
+
+With this it will log the reading for every meter it can see (the log will get
+quite noisy). Then you can look at the meter IDs and find the one on your device.
+This will also show you the message type so you can remove the type(s) your device
+doesn't use.
+
+Alternatively you can skip debug logging and use a tool like [MQTT Explorer][mqtt-explorer]
+which lets you browse all available subtopics to see the IDs. Although you should
+still figure out your message type via trial and error or debug logging and remove
+the others from the list.
 
 ## Configuration
 
 Example add-on configuration:
 
 ```yaml
-# TODO
+watched_meters: []
+msgtype:
+  - idm
+reading_multiplier: 0.01
+mqtt:
+  host: 127.0.0.1
+  port: 1883
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
 
 ### Option: `watched_meters`
 
-TODO
+The list of meter IDs you're tracking. Must be integers. See above for instructions
+on finding yours. Set to an empty array to listen for all meters in range.
 
 ### Option: `reading_multiplier`
 
-TODO
-
-### Option: `readings_per_hour`
-
-TODO
+Used to convert the consumption number to the unit of your choice. Consumption
+numbers are whole numbers only so they may be in a weird unit, like hundredsth
+of a kWh. Readings will be multiplied by this number before being reported to
+MQTT so you can convert to the unit you actually see on your bill.
 
 ### Option: `message_types`
 
-TODO
+Message type your meter(s) use, will not read and process others. Supported options
+are `scm` and `idm`.
+
+**Note**: _`rtlamr` supports other [protocols][msg-protocols], if you think
+your meter uses one see below for help._
 
 ### Option: `mqtt.host`
 
-TODO
+IP address or domain where your MQTT broker can be reached. Ex. `core-mosquitto`
+or `127.0.0.1`
+
+### Option: `mqtt.port`
+
+Port your broker is listening on. Ex. `1883`
 
 ### Option: `mqtt.ca`
 
-TODO
+The CA certificate used to sign MQTT broker's certificate if broker is using a
+self-signed certificate for TLS.
 
 **Note**: _The file MUST be stored in `/ssl/`_
 
 ### Option: `mqtt.cert`
 
-TODO
-
-**Note**: _The file MUST be stored in `/ssl/`_
+The absolute path to a certificate for client-authentication if MQTT broker is
+using mTLS to authenticate clients.
 
 ### Option: `mqtt.key`
 
-TODO
+The absolute path to the key for the client-authentication certificate if MQTT
+broker is using mTLS to authenticate clients.
 
-**Note**: _The file MUST be stored in `/ssl/`_
+**Note**: _This field is required if `client.certfile` is provided_
 
 ### Option: `mqtt.username`
 
-TODO
+Username to use when authenticating with MQTT broker.
 
 ### Option: `mqtt.password`
 
-TODO
+Password to use when authenticating with MQTT broker.
 
 ### Option: `mqtt.client_id`
 
-TODO
+Client ID to use when connecting to the MQTT broker.
 
 ### Option: `mqtt.base_topic`
 
-TODO
+By default, the topics of all MQTT messages begins with `readings/{meter_ID}`.
+If you set this option then the topics will begin with `{mqtt.base_topic}/readings/{meter_id}`.
+
+## Unsupported Message Types
+
+The full list of message types supported by `rtlamr` can be found [here][msg-protocols].
+Currently this add-on only supports `scm` and `idm` however. That's simply because
+I have no access to devices which use these other message types so I can't see
+what messages of that type look like.
+
+If you believe you have a device sending out messages of a type this add-on does
+not support that you think should be supported please do the following:
+
+1. Add `discovery_mode: plain` to the add-on config
+2. Ensure `log_level` is set to `info` or `debug`
+3. Run add-on until you see your meter ID in the log. Save the log line.
+4. Change `discovery_mode` to `csv` and repeat #3.
+5. Create an [issue][issue] requesting support for your format.
+6. Put both log lines (csv and plain format) in the issue.
+
+I need both formats so I can see the message type and field names and then which
+columns those fields go in when in CSV format.
+
+I would strongly recommend not leaving `watched_meters` empty when in discovery
+mode or your log will likely be **very** noisy.
+
+Remember to remove `discovery_mode` from the config after you are done!
 
 ## Changelog & Releases
 
@@ -162,12 +250,17 @@ SOFTWARE.
 [add-repo-shield]: https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg
 [add-repo]: https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmdegat01%2Fhassio-addons
 [addon-mosquitto]: https://github.com/home-assistant/addons/tree/master/mosquitto
+[compatible-meters]: https://github.com/bemasher/rtlamr/wiki/Compatible-Meters
 [contributors]: https://github.com/mdegat01/addon-amr2mqtt/graphs/contributors
 [discord-ha]: https://discord.gg/c5DvZ4e
 [forum-centralcommand]: https://community.home-assistant.io/u/CentralCommand/?u=CentralCommand
 [forum]: https://community.home-assistant.io
 [issue]: https://github.com/mdegat01/addon-amr2mqtt/issues
 [mdegat01]: https://github.com/mdegat01
+[mqtt-explorer]: https://mqtt-explorer.com/
+[msg-protocols]: https://github.com/bemasher/rtlamr/wiki/Protocol
+[nesdr-nano-2plus]: https://www.amazon.com/NooElec-NESDR-Nano-Ultra-Low-Compatible/dp/B01B4L48QU
 [ragingcomputer]: https://github.com/ragingcomputer
 [releases]: https://github.com/mdegat01/addon-amr2mqtt/releases
+[rtl-sdr-dongle]: https://www.amazon.com/s?k=RTL2832U
 [semver]: http://semver.org/spec/v2.0.0

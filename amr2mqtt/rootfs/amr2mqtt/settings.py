@@ -22,7 +22,7 @@ meters_config = json.load(config_options)["meters"]
 if meters_config:
     METERS = functools.reduce(make_meters_map, meters_config, {})
     WATCHED_METERS = ",".join(METERS.keys())
-    WATCHED_PROTOCOLS = ",".join(set([meter.protocol for meter in METERS]))
+    WATCHED_PROTOCOLS = ",".join(set([meter["protocol"] for meter in METERS]))
 else:
     WATCHED_PROTOCOLS = "all"
 

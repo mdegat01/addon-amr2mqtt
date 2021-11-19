@@ -93,7 +93,7 @@ while True:
         amrline = rtlamr.stdout.readline().strip()
 
         # If in discovery mode, just log the line and continue
-        if settings.DISCOVERY_MODE:
+        if settings.DISCOVERY_MODE and amrline:
             logging.info(amrline)
             continue
 

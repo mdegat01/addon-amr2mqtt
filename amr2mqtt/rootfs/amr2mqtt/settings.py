@@ -14,12 +14,6 @@ WATCHED_METERS = os.environ["WATCHED_METERS"]
 # See differences here: https://github.com/bemasher/rtlamr#message-types
 MESSAGE_TYPES = os.environ["MESSAGE_TYPES"]
 
-# If in discovery mode we simply log everything at debug level
-DISCOVERY_MODE = MESSAGE_TYPES == "all"
-
-# Normally we want CSV but discovery mode lets people pick
-MESSAGE_FORMAT = os.environ["DISCOVERY_FORMAT"] if DISCOVERY_MODE else "csv"
-
 # multiplier to get reading to desired units
 # examples:
 #   for meter providing readings in desired units currently

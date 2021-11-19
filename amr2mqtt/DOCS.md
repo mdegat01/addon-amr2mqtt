@@ -229,7 +229,6 @@ SOFTWARE.
 [issue]: https://github.com/mdegat01/addon-amr2mqtt/issues
 [mdegat01]: https://github.com/mdegat01
 [mqtt-explorer]: https://mqtt-explorer.com/
-[msg-protocols]: https://github.com/bemasher/rtlamr/wiki/Protocol
 [nesdr-nano-2plus]: https://www.amazon.com/NooElec-NESDR-Nano-Ultra-Low-Compatible/dp/B01B4L48QU
 [ragingcomputer]: https://github.com/ragingcomputer
 [releases]: https://github.com/mdegat01/addon-amr2mqtt/releases

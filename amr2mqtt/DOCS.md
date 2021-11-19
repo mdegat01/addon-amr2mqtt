@@ -13,7 +13,7 @@ include:
 - Meter does not broadcast consumption information, it just displays it
 - Broadcasts by your meter are encrypted and cannot be used
 - Meter only broadcasts once a month when the utility company pings it
-- Meter broadcasts in a format this add-on doesn't support (yet! see below)
+- Meter broadcasts in a format this add-on doesn't support (yet! [see below](#unsupported-message-types))
 
 So before beginning, check this list of [compatible meters][compatible-meters]
 and see if your meter is on there. It will have the manufacturer and model number
@@ -46,7 +46,7 @@ use it.
 [![Open your Home Assistant instance and show the dashboard of a Supervisor add-on.][add-addon-shield]][add-addon-mosquitto]
 
 If you prefer to use your own MQTT broker, you must fill in the `mqtt` options
-below. Please note there is no easy upgrade path between these two options.
+below.
 
 This addon will publish messages to the topics `readings/{meter_id}/meter_reading`
 and (IDM msgtype only) `readings/{meter_id}/interval_reading`. You can
@@ -59,7 +59,7 @@ mine was 8 digits. Mine was also on a sticker with a bar code, the big number
 right below it. I don't know if yours will have the same location but it will be
 on the device.
 
-If you're having trouble finding it set add this to your config:
+If you're having trouble finding it, add this to your config:
 
 ```yaml
 watched_meters: []
@@ -69,8 +69,8 @@ msgtype:
 log_level: debug
 ```
 
-With this it will log the reading for every meter it can see (the log will get
-quite noisy). Then you can look at the meter IDs and find the one on your device.
+With this it will log every message from every meter in range (the log will get
+quite noisy). Then you can match the meter IDs with what you see on your device.
 This will also show you the message type so you can remove the type(s) your device
 doesn't use.
 
@@ -103,17 +103,17 @@ on finding yours. Set to an empty array to listen for all meters in range.
 ### Option: `reading_multiplier`
 
 Used to convert the consumption number to the unit of your choice. Consumption
-numbers are whole numbers only so they may be in a weird unit, like hundredsth
+numbers are whole numbers only so they may be in a weird unit, like hundredths
 of a kWh. Readings will be multiplied by this number before being reported to
 MQTT so you can convert to the unit you actually see on your bill.
 
 ### Option: `message_types`
 
-Message type your meter(s) use, will not read and process others. Supported options
+Message type(s) your meter(s) use, will not read and process others. Supported options
 are `scm` and `idm`.
 
 **Note**: _`rtlamr` supports other [protocols][msg-protocols], if you think
-your meter uses one see below for help._
+your meter uses one see [unsupported message types](#unsupported-message-types)._
 
 ### Option: `mqtt.host`
 
@@ -164,11 +164,11 @@ If you set this option then the topics will begin with `{mqtt.base_topic}/readin
 
 The full list of message types supported by `rtlamr` can be found [here][msg-protocols].
 Currently this add-on only supports `scm` and `idm` however. That's simply because
-I have no access to devices which use these other message types so I can't see
-what messages of that type look like.
+I have no access to meters which use these other protocols so I can't see
+what those kinds of messages look like.
 
-If you believe you have a device sending out messages of a type this add-on does
-not support that you think should be supported please do the following:
+If you believe you have a meter using a protocol `rtlamr` supports but this add-on
+does not please do the following:
 
 1. Add `discovery_mode: plain` to the add-on config
 1. Ensure `log_level` is set to `info` or `debug`

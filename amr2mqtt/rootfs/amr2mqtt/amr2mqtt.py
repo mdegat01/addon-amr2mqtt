@@ -117,6 +117,20 @@ while True:
             read_cur = int(flds[7])
             msgtype = "SCM"
 
+        # proper SCM+ results have 10 fields
+        elif len(flds) == 10:
+            # get some required info: meter ID, current meter reading,
+            meter_id = int(flds[6])
+            read_cur = int(flds[7])
+            msgtype = "SCM+"
+
+        # proper R900 results have 11 fields
+        elif len(flds) == 11:
+            # get some required info: meter ID, current meter reading,
+            meter_id = int(flds[3])
+            read_cur = int(flds[7])
+            msgtype = "R900"
+
         # invalid message or unsupported message type
         else:
             continue

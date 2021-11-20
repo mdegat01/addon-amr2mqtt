@@ -87,7 +87,7 @@ def main_loop():
     while True:
         try:
             amr_line = rtlamr.stdout.readline().strip()
-            amr_dict = json.load(amr_line)
+            amr_dict = json.loads(amr_line)
 
             # Must have `message` or we ignore
             if "Message" not in amr_dict:

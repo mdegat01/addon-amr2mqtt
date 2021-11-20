@@ -99,7 +99,7 @@ def main_loop():
             # IDM results have 17 fields
             if fields_count == 17:
                 msg_type = "idm"
-                meter_id = amr_message["ERTSerialNumber"]
+                meter_id = str(amr_message["ERTSerialNumber"])
                 adjust_reading(
                     meter_id,
                     amr_message,
@@ -110,7 +110,7 @@ def main_loop():
             # NetIDM results have 16 fields
             elif fields_count == 16:
                 msg_type = "netidm"
-                meter_id = amr_message["ERTSerialNumber"]
+                meter_id = str(amr_message["ERTSerialNumber"])
                 adjust_reading(
                     meter_id,
                     amr_message,
@@ -121,19 +121,19 @@ def main_loop():
             # R900 results have 9 fields
             elif fields_count == 9:
                 msg_type = "r900"
-                meter_id = amr_message["ID"]
+                meter_id = str(amr_message["ID"])
                 adjust_reading(meter_id, amr_message, "Consumption")
 
             # SCM results have 6 fields
             elif fields_count == 6:
                 msg_type = "scm"
-                meter_id = amr_message["ID"]
+                meter_id = str(amr_message["ID"])
                 adjust_reading(meter_id, amr_message, "Consumption")
 
             # SCM+ results have 7 fields
             elif fields_count == 7:
                 msg_type = "scm+"
-                meter_id = amr_message["EndpointID"]
+                meter_id = str(amr_message["EndpointID"])
                 adjust_reading(meter_id, amr_message, "Consumption")
 
             # invalid message or unsupported message type

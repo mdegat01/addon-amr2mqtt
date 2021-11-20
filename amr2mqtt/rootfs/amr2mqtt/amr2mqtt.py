@@ -41,7 +41,7 @@ def start_rtlamr():
     """Start rtlamr program."""
     rtlamr_cmd = [
         settings.RTLAMR,
-        f"-msg_type={settings.WATCHED_PROTOCOLS}",
+        f"-msgtype={settings.WATCHED_PROTOCOLS}",
         "-format=json",
     ]
 

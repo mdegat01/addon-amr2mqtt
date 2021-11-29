@@ -51,8 +51,6 @@ You could also [open an issue here][issue] on GitHub.
 
 The original setup of this repository is by [Mike Degatano][mdegat01].
 
-The amridm2mqtt service this was built off of was created by [ragingcomputer][ragingcomputer].
-
 For a full list of all authors and contributors,
 check [the contributor's page][contributors].
 

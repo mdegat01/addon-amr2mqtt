@@ -140,6 +140,10 @@ def main_loop():
             else:
                 continue
 
+            # If in debugging mode, add the protocol to the message
+            if settings.WATCHED_PROTOCOLS == "all":
+                amr_message["Protocol"] = msg_type
+
             json_message = json.dumps(amr_message)
             logging.debug(
                 "Meter: %s, MsgType: %s, Reading: %s",

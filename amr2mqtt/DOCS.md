@@ -47,9 +47,24 @@ use it.
 If you prefer to use your own MQTT broker, you must fill in the `mqtt` options
 below.
 
-This addon will publish messages to the topics `readings/{meter_id}/meter_reading`
-and (IDM msgtype only) `readings/{meter_id}/interval_reading`. You can
-customize this by setting `mqtt.base_topic` (described below).
+## MQTT Messages
+
+This addon will publish a message to the topic `amr2mqtt/{meter_id}` each time
+it receives a message if it is from a meter listed in `watched_meters` (or if
+`watched_meters` is left blank). You can change `amr2mqtt` by setting `mqtt.base_topic`
+(described below).
+
+The content of those messages will be a JSON representation of what was received
+from `rtlamr` except:
+
+1. The current total consumption value will always be in `Consumption`. Some protocols
+   use a different field so the add-on normalizes this.
+1. The values in `Consumption` and (if present) `DifferentialConsumptionIntervals`
+   will have been multiplied by the `reading_multiplier` for that meter (if provided).
+
+The addon will also publish [discovery messages][ha-mqtt-discovery] on start-up
+to tell HA to create a device and various sensors for each meter you want to watch.
+You can disable or customize this via options below.
 
 ## Finding Your Meter
 
@@ -58,35 +73,38 @@ mine was 8 digits. Mine was also on a sticker with a bar code, the big number
 right below it. I don't know if yours will have the same location but it will be
 on the device.
 
-If you're having trouble finding it, add this to your config:
+If you're having trouble finding it, set `watched_meters` to `[]` in the config.
+This will cause it to capture every message from every meter in range (regardless
+of protocol) and pass them on to your MQTT broker. This way you can see them all
+using a tool like [MQTT Explorer][mqtt-explorer] and find the ID that matches a
+number you see on your device.
 
-```yaml
-watched_meters: []
-msgtype:
-  - scm
-  - idm
-log_level: debug
-```
+This is also a good way to figure out the protocol your meter is using if you're
+not sure. When `watched_meters` is left empty the add-on assumes you are debugging
+and adds the protocol to every message.
 
-With this it will log every message from every meter in range (the log will get
-quite noisy). Then you can match the meter IDs with what you see on your device.
-This will also show you the message type so you can remove the type(s) your device
-doesn't use.
+You should not run long-term with `watched_meters` left empty. Some protocols
+require a lot of processing and you will be forcing the add-on to process a lot
+messages. Once you have found your meter and figured out its protocol you should
+add it to `watched_meters` to reduce the overhead of this add-on.
 
-Alternatively you can skip debug logging and use a tool like [MQTT Explorer][mqtt-explorer]
-which lets you browse all available subtopics to see the IDs. Although you should
-still figure out your message type via trial and error or debug logging and remove
-the others from the list.
+**Note**: If you don't want to download additional software or do your debugging
+via MQTT you can also set `log_level` to `debug` while `watched_meters` is empty.
+When `log_level` is set to `debug` then add-on will log each message it receives
+along with the protocol and meter ID. This can get quite noisy though!
 
 ## Configuration
 
 Example add-on configuration:
 
 ```yaml
-watched_meters: []
-msgtype:
-  - idm
-reading_multiplier: 0.01
+watched_meters:
+  - id: 12345678
+    protocol: scm
+    name: My gas meter
+    type: gas
+    reading_multiplier: 0.01
+    reading_unit_of_measurement: ccf
 mqtt:
   host: 127.0.0.1
   port: 1883
@@ -96,20 +114,41 @@ mqtt:
 
 ### Option: `watched_meters`
 
-The list of meter IDs you're tracking. Must be integers. See above for instructions
-on finding yours. Set to an empty array to listen for all meters in range.
+The list of meters you're tracking. `protocol` and `id` are required for each
+meter. All other fields are optional and primarily used in discovery messages
+to set up the Home Assistant entities.
 
-### Option: `reading_multiplier`
+#### Sub-option: `id`
+
+ID of the meter, must be a positive integer.
+
+#### Sub-option: `protocol`
+
+Protocol the meter uses for its readings. Must be one of the following: `idm`,
+`netidm`, `r900`, `scm`, or `scm+`.
+
+#### Sub-option: `name`
+
+Name for the meter. Only used in discovery messages.
+
+#### Sub-option: `type`
+
+Type of meter. must be one of the following: `gas`, `water`, or `electric`. Only
+used in discovery messages.
+
+#### Sub-option: `reading_multiplier`
 
 Used to convert the consumption number to the unit of your choice. Consumption
 numbers are whole numbers only so they may be in a weird unit, like hundredths
 of a kWh. Readings will be multiplied by this number before being reported to
 MQTT so you can convert to the unit you actually see on your bill.
 
-### Option: `message_types`
+**Note:** If your meter uses `idm` or `netidm` then the consumption value for
+each interval will also be multiplied by this number.
 
-Message type(s) your meter(s) use, will not read and process others. Supported options
-are `idm`, `r900`, `scm`, and `scm+`.
+#### Sub-option: `reading_unit_of_measurement`
+
+Unit of measurement for the consumption value. Only used in discovery messages.
 
 ### Option: `mqtt.host`
 
@@ -153,8 +192,18 @@ Client ID to use when connecting to the MQTT broker.
 
 ### Option: `mqtt.base_topic`
 
-By default, the topics of all MQTT messages begins with `readings/{meter_ID}`.
-If you set this option then the topics will begin with `{mqtt.base_topic}/readings/{meter_id}`.
+By default, the topics of all MQTT messages begins with `amr2mqtt/{meter_ID}`.
+If you set this option then the topics will begin with `{mqtt.base_topic}/{meter_id}`.
+
+### Option: `home_assistant_discovery_enabled`
+
+Set to `false` to disable the add-on from sending discovery messages for the
+watched meters.
+
+### Option: `home_assistant_discovery_prefix`
+
+Defaults to `homeassistant`. Set if you use a custom MQTT discovery prefix in
+Home Assistant.
 
 ## Changelog & Releases
 
@@ -185,8 +234,6 @@ You could also [open an issue here][issue] on GitHub.
 ## Authors & contributors
 
 The original setup of this repository is by [Mike Degatano][mdegat01].
-
-The amridm2mqtt service this was built off of was created by [ragingcomputer][ragingcomputer].
 
 For a full list of all authors and contributors,
 check [the contributor's page][contributors].
@@ -226,6 +273,7 @@ SOFTWARE.
 [discord-ha]: https://discord.gg/c5DvZ4e
 [forum-centralcommand]: https://community.home-assistant.io/u/CentralCommand/?u=CentralCommand
 [forum]: https://community.home-assistant.io
+[ha-mqtt-discovery]: https://www.home-assistant.io/docs/mqtt/discovery/#discovery-topic
 [issue]: https://github.com/mdegat01/addon-amr2mqtt/issues
 [mdegat01]: https://github.com/mdegat01
 [mqtt-explorer]: https://mqtt-explorer.com/

@@ -45,6 +45,13 @@ if ! bashio::config.is_empty 'mqtt.ca'; then
     fi
 fi
 
+# --- SET DISCOVERY SETTINGS ---
+if bashio::config.false 'home_assistant_discovery_enabled'; then
+    export "HA_DISCOVERY_DISABLED=true"
+elif bashio::config.exists 'home_assistant_discovery_prefix'; then
+    export "HA_DISCOVERY_TOPIC=$(bashio::config 'home_assistant_discovery_prefix')"
+fi
+
 # --- SET LOG LEVEL ---
 case "$(bashio::config 'log_level')" in \
     trace)      ;& \

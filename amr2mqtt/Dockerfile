@@ -59,6 +59,9 @@ ARG BUILD_REF
 ARG BUILD_REPOSITORY
 ARG BUILD_VERSION
 
+# Set version as env for use in scripts
+ENV BUILD_VERSION=${BUILD_VERSION}
+
 # Labels
 LABEL \
     io.hass.name="${BUILD_NAME}" \

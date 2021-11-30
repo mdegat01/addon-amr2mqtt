@@ -11,8 +11,58 @@ import signal
 import sys
 import time
 import json
+import re
 import paho.mqtt.client as mqtt
 import settings
+
+ALL_IDM = [
+    "Preamble",
+    "PacketLength",
+    "HammingCode",
+    "ApplicationVersion",
+    "ERTType",
+    "ConsumptionIntervalCount",
+    "TransmitTimeOffset",
+    "SerialNumberCRC",
+    "PacketCRC",
+]
+ATTRIBUTES = {
+    "idm": [
+        "ModuleProgrammingState",
+        "TamperCounters",
+        "AsynchronousCounters",
+        "PowerOutageFlags",
+    ]
+    + ALL_IDM,
+    "netidm": [
+        "ProgrammingState",
+        "LastGeneration",
+        "LastConsumption",
+    ]
+    + ALL_IDM,
+    "r900": [
+        "Unkn1",
+        "NoUse",
+        "BackFlow",
+        "Unkn3",
+        "Leak",
+        "LeakNow",
+        "checksum",
+    ],
+    "scm": [
+        "Type",
+        "TamperPhy",
+        "TamperEnc",
+        "ChecksumVal",
+    ],
+    "scm+": [
+        "FrameSync",
+        "ProtocolID",
+        "EndpointType",
+        "Tamper",
+        "PacketCRC",
+    ],
+}
 
 
 def shutdown(**_):
@@ -79,6 +129,109 @@ def create_mqtt_client():
         keepalive=60,
     )
     return client
+
+
+def create_interval_sensor(meter_id, meter, device_name, device_id):
+    """Create discovery message for interval consumption sensor."""
+    return set_consumption_details(
+        {
+            "enabled_by_default": True,
+            "name": f"{device_name} Last Interval Consumption",
+            "unique_id": f"{device_id}_LastIntervalConsumption",
+            "value_template": "{{ value_json.DifferentialConsumptionIntervals[0] }}",
+            "json_attributes_topic": f"{settings.MQTT_BASE_TOPIC}/{meter_id}",
+            "json_attributes_template": {
+                "DifferentialConsumptionIntervals": "{{ value_json.DifferentialConsumptionIntervals }}",  # pylint: disable=line-too-long
+            },
+        },
+        meter,
+    )
+
+
+def set_consumption_details(payload, meter):
+    """Set discovery details for a consumption sensor."""
+    if "type" in meter:
+        if meter["type"] == "gas":
+            payload["device_class"] = "gas"
+        elif meter["type"] == "energy":
+            payload["device_class"] = "energy"
+        else:
+            payload["icon"] = "mdi:water"
+
+    if "reading_unit_of_measurement" in meter:
+        payload["unit_of_measurement"] = meter["reading_unit_of_measurement"]
+
+    return payload
+
+
+def create_sensor(attribute, device_name, device_id, enabled=True):
+    """Create generic discovery message to make reading attribute into sensor."""
+    # Turn camelcase into spaces
+    name = re.sub(r"([^A-Z]|ERT)([A-Z])", r"\1 \2", attribute)
+    return {
+        "enabled_by_default": enabled,
+        "name": f"{device_name} {name}",
+        "unique_id": f"{device_id}_{attribute}",
+        "value_template": f"{{{{ value_json.{attribute} }}}}",
+    }
+
+
+def publish_sensor_discovery(meter_id, device, attribute, payload):
+    """Publish discovery message to make reading attribute into sensor."""
+    base_payload = {
+        "availability": [
+            {
+                "topic": settings.MQTT_AVAILABILTY_TOPIC,
+            }
+        ],
+        "device": device,
+        "state_class": "measurement",
+        "state_topic": f"{settings.MQTT_BASE_TOPIC}/{meter_id}",
+        "platform": "mqtt",
+    }
+
+    mqttc.publish(
+        f"{settings.HA_DISCOVERY_TOPIC}/sensor/{meter_id}/{attribute}/config",
+        json.dumps(payload | base_payload),
+    )
+
+
+def send_discovery_messages():
+    """Send discovery messages to create sensors for each watched meter."""
+    for meter_id, meter in settings.METERS.items():
+        device_id = f"amr2mqtt_{meter_id}"
+        device_name = meter.get("name", meter_id)
+        protocol = meter["protocol"]
+        device = {
+            "identifiers": [device_id],
+            "name": device_name,
+            "sw_version": settings.SW_VERSION,
+        }
+
+        # All meters have a consumption sensor
+        consumption = set_consumption_details(
+            create_sensor("Consumption", device_name, device_id),
+            meter,
+        )
+        publish_sensor_discovery(meter_id, device, "Consumption", consumption)
+
+        # IDM meters have interval consumption
+        if protocol in ["idm", "netidm"]:
+            publish_sensor_discovery(
+                meter_id,
+                device,
+                "LastIntervalConsumption",
+                create_interval_sensor(meter_id, meter, device_name, device_id),
+            )
+
+        # Create disabled sensors from all other attributes so people can enable if they wish
+        for attr in ATTRIBUTES[protocol]:
+            publish_sensor_discovery(
+                meter_id,
+                device,
+                attr,
+                create_sensor(attr, device_name, device_id, enabled=False),
+            )
 
 
 def main_loop():
@@ -167,4 +320,8 @@ signal.signal(signal.SIGINT, shutdown)
 
 rtlamr = start_rtlamr()
 mqttc = create_mqtt_client()
+
+if not settings.HA_DISCOVERY_DISABLED:
+    send_discovery_messages()
+
 main_loop()

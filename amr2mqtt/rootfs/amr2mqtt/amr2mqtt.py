@@ -74,19 +74,6 @@ def shutdown(**_):
     sys.exit(0)
 
 
-def adjust_reading(m_id, reading, consumption_field, interval_field=None):
-    """Convert consumption and interval data using configured multiplier."""
-    if m_id in settings.METERS:
-        config = settings.METERS[m_id]
-        multiplier = config.get("reading_multiplier", 1)
-        reading["Consumption"] = reading[consumption_field] * multiplier
-
-        if interval_field:
-            reading["DifferentialConsumptionIntervals"] = [
-                interval * multiplier for interval in reading[interval_field]
-            ]
-
-
 def start_rtlamr():
     """Start rtlamr program."""
     rtlamr_cmd = [
@@ -232,6 +219,21 @@ def send_discovery_messages():
                 attr,
                 create_sensor(attr, device_name, device_id, enabled=False),
             )
+
+
+def adjust_reading(m_id, reading, consumption_field, interval_field=None):
+    """Convert consumption and interval data using configured multiplier."""
+    if m_id in settings.METERS:
+        multiplier = settings.METERS[m_id].get("reading_multiplier", 1)
+    else:
+        multiplier = 1
+
+    reading["Consumption"] = reading[consumption_field] * multiplier
+
+    if interval_field:
+        reading["DifferentialConsumptionIntervals"] = [
+            interval * multiplier for interval in reading[interval_field]
+        ]
 
 
 def main_loop():

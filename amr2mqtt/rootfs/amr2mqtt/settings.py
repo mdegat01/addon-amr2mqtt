@@ -19,11 +19,12 @@ def make_meters_map(meters, meter):
 config_options = open("/data/options.json")
 meters_config = json.load(config_options)["meters"]
 
-if meters_config:
+if bool(meters_config):
     METERS = functools.reduce(make_meters_map, meters_config, {})
     WATCHED_METERS = ",".join(METERS.keys())
     WATCHED_PROTOCOLS = ",".join(set([meter["protocol"] for meter in meters_config]))
 else:
+    METERS = {}
     WATCHED_PROTOCOLS = "all"
 
 # Get server, TLS and auth settings
@@ -38,9 +39,7 @@ MQTT_CLIENT_ID = os.environ.get("MQTT_CLIENT_ID")
 
 # Get discovery info
 SW_VERSION = os.environ.get("BUILD_VERSION")
-HA_DISCOVERY_DISABLED = WATCHED_PROTOCOLS == "all" or bool(
-    os.environ.get("HA_DISCOVERY_DISABLED")
-)
+HA_DISCOVERY_DISABLED = bool(os.environ.get("HA_DISCOVERY_DISABLED"))
 discovery_topic = os.environ.get("HA_DISCOVERY_TOPIC")
 HA_DISCOVERY_TOPIC = discovery_topic if bool(discovery_topic) else "homeassistant"
 

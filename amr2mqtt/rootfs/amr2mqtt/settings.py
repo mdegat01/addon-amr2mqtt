@@ -38,7 +38,9 @@ MQTT_CLIENT_ID = os.environ.get("MQTT_CLIENT_ID")
 
 # Get discovery info
 SW_VERSION = os.environ.get("BUILD_VERSION")
-HA_DISCOVERY_DISABLED = bool(os.environ.get("HA_DISCOVERY_DISABLED"))
+HA_DISCOVERY_DISABLED = WATCHED_PROTOCOLS == "all" or bool(
+    os.environ.get("HA_DISCOVERY_DISABLED")
+)
 discovery_topic = os.environ.get("HA_DISCOVERY_TOPIC")
 HA_DISCOVERY_TOPIC = discovery_topic if bool(discovery_topic) else "homeassistant"
 

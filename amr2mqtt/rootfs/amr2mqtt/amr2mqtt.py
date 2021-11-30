@@ -66,12 +66,25 @@ ATTRIBUTES = {
 
 
 def shutdown(**_):
-    """Disconnect MQTT client and send signal to shutdown and hard kill opened processes."""
+    """Disconnect MQTT client, stop rtlamr and exit."""
+    mqttc.publish(
+        topic=settings.MQTT_AVAILABILTY_TOPIC,
+        payload="offline",
+        retain=True,
+    )
+    logging.info("Disconnecting from MQTT broker")
+    mqttc.loop_stop()
     mqttc.disconnect()
+    stop_rtlamr()
+    sys.exit(0)
+
+
+def stop_rtlamr():
+    """Stop and hard kill opened rtlamr process."""
+    logging.info("Shutting down rtlamr")
     rtlamr.send_signal(15)
     time.sleep(1)
     rtlamr.send_signal(9)
-    sys.exit(0)
 
 
 def start_rtlamr():
@@ -86,6 +99,7 @@ def start_rtlamr():
     if settings.WATCHED_PROTOCOLS != "all":
         rtlamr_cmd += [f"-filterid={settings.WATCHED_METERS}"]
 
+    logging.info("Starting rtlamr")
     return subprocess.Popen(
         rtlamr_cmd,
         stdout=subprocess.PIPE,
@@ -93,9 +107,43 @@ def start_rtlamr():
     )
 
 
+def on_mqtt_connect(client, userdata, flags, result):  # pylint: disable=unused-argument
+    """Send online message on connect."""
+    if result == 0:
+        client.publish(
+            topic=settings.MQTT_AVAILABILTY_TOPIC,
+            payload="online",
+            retain=True,
+        )
+    else:
+        error_log = "MQTT Broker refused connection - %s (result code %s)"
+        if result == 1:
+            logging.error(error_log, "Incorrect protocol version", result)
+        elif result == 2:
+            logging.error(error_log, "Invalid client identifier", result)
+        elif result == 3:
+            logging.error(error_log, "Server unavailable", result)
+        elif result == 4:
+            logging.error(error_log, "Bad username or password", result)
+        elif result == 5:
+            logging.error(error_log, "Not authorised", result)
+        else:
+            logging.error(error_log, "Unknown error", result)
+
+        stop_rtlamr()
+        sys.exit(0)
+
+
 def create_mqtt_client():
     """Create MQTT client with TLS and auth if necessary."""
     client = mqtt.Client(client_id=settings.MQTT_CLIENT_ID)
+    client.on_connect = on_mqtt_connect
+    client.will_set(
+        topic=settings.MQTT_AVAILABILTY_TOPIC,
+        payload="offline",
+        qos=1,
+        retain=True,
+    )
 
     if settings.MQTT_CA_CERT:
         client.tls_set(
@@ -106,12 +154,15 @@ def create_mqtt_client():
 
     if settings.MQTT_USERNAME:
         client.username_pw_set(
-            settings.MQTT_USERNAME,
+            username=settings.MQTT_USERNAME,
             password=settings.MQTT_PASSWORD,
         )
 
+    logging.info(
+        "Connecting to MQTT broker at %s:%s", settings.MQTT_HOST, settings.MQTT_PORT
+    )
     client.connect(
-        settings.MQTT_HOST,
+        host=settings.MQTT_HOST,
         port=settings.MQTT_PORT,
         keepalive=60,
     )
@@ -121,7 +172,7 @@ def create_mqtt_client():
 def create_interval_sensor(meter_id, meter, device_name, device_id):
     """Create discovery message for interval consumption sensor."""
     return set_consumption_details(
-        {
+        payload={
             "enabled_by_default": True,
             "name": f"{device_name} Last Interval Consumption",
             "unique_id": f"{device_id}_LastIntervalConsumption",
@@ -131,7 +182,7 @@ def create_interval_sensor(meter_id, meter, device_name, device_id):
                 "DifferentialConsumptionIntervals": "{{ value_json.DifferentialConsumptionIntervals }}",  # pylint: disable=line-too-long
             },
         },
-        meter,
+        meter=meter,
     )
 
 
@@ -178,8 +229,9 @@ def publish_sensor_discovery(meter_id, device, attribute, payload):
     }
 
     mqttc.publish(
-        f"{settings.HA_DISCOVERY_TOPIC}/sensor/{meter_id}/{attribute}/config",
-        json.dumps(payload | base_payload),
+        topic=f"{settings.HA_DISCOVERY_TOPIC}/sensor/{meter_id}/{attribute}/config",
+        payload=json.dumps(payload | base_payload),
+        retain=True,
     )
 
 
@@ -197,34 +249,39 @@ def send_discovery_messages():
 
         # All meters have a consumption sensor
         consumption = set_consumption_details(
-            create_sensor("Consumption", device_name, device_id),
-            meter,
+            payload=create_sensor("Consumption", device_name, device_id),
+            meter=meter,
         )
-        publish_sensor_discovery(meter_id, device, "Consumption", consumption)
+        publish_sensor_discovery(
+            meter_id=meter_id,
+            device=device,
+            attribute="Consumption",
+            payload=consumption,
+        )
 
         # IDM meters have interval consumption
         if protocol in ["idm", "netidm"]:
             publish_sensor_discovery(
-                meter_id,
-                device,
-                "LastIntervalConsumption",
-                create_interval_sensor(meter_id, meter, device_name, device_id),
+                meter_id=meter_id,
+                device=device,
+                attribute="LastIntervalConsumption",
+                payload=create_interval_sensor(meter_id, meter, device_name, device_id),
             )
 
         # Create disabled sensors from all other attributes so people can enable if they wish
         for attr in ATTRIBUTES[protocol]:
             publish_sensor_discovery(
-                meter_id,
-                device,
-                attr,
-                create_sensor(attr, device_name, device_id, enabled=False),
+                meter_id=meter_id,
+                device=device,
+                attribute=attr,
+                payload=create_sensor(attr, device_name, device_id, enabled=False),
             )
 
 
-def adjust_reading(m_id, reading, consumption_field, interval_field=None):
+def adjust_reading(meter_id, reading, consumption_field, interval_field=None):
     """Convert consumption and interval data using configured multiplier."""
-    if m_id in settings.METERS:
-        multiplier = settings.METERS[m_id].get("reading_multiplier", 1)
+    if meter_id in settings.METERS:
+        multiplier = settings.METERS[meter_id].get("reading_multiplier", 1)
     else:
         multiplier = 1
 
@@ -256,10 +313,10 @@ def main_loop():
                 msg_type = "idm"
                 meter_id = str(amr_message["ERTSerialNumber"])
                 adjust_reading(
-                    meter_id,
-                    amr_message,
-                    "LastConsumptionCount",
-                    "DifferentialConsumptionIntervals",
+                    meter_id=meter_id,
+                    reading=amr_message,
+                    consumption_field="LastConsumptionCount",
+                    interval_field="DifferentialConsumptionIntervals",
                 )
 
             # NetIDM results have 16 fields
@@ -267,29 +324,41 @@ def main_loop():
                 msg_type = "netidm"
                 meter_id = str(amr_message["ERTSerialNumber"])
                 adjust_reading(
-                    meter_id,
-                    amr_message,
-                    "LastConsumptionNet",
-                    "DifferentialConsumptionIntervals",
+                    meter_id=meter_id,
+                    reading=amr_message,
+                    consumption_field="LastConsumptionNet",
+                    interval_field="DifferentialConsumptionIntervals",
                 )
 
             # R900 results have 9 fields
             elif fields_count == 9:
                 msg_type = "r900"
                 meter_id = str(amr_message["ID"])
-                adjust_reading(meter_id, amr_message, "Consumption")
+                adjust_reading(
+                    meter_id=meter_id,
+                    reading=amr_message,
+                    consumption_field="Consumption",
+                )
 
             # SCM results have 6 fields
             elif fields_count == 6:
                 msg_type = "scm"
                 meter_id = str(amr_message["ID"])
-                adjust_reading(meter_id, amr_message, "Consumption")
+                adjust_reading(
+                    meter_id=meter_id,
+                    reading=amr_message,
+                    consumption_field="Consumption",
+                )
 
             # SCM+ results have 7 fields
             elif fields_count == 7:
                 msg_type = "scm+"
                 meter_id = str(amr_message["EndpointID"])
-                adjust_reading(meter_id, amr_message, "Consumption")
+                adjust_reading(
+                    meter_id=meter_id,
+                    reading=amr_message,
+                    consumption_field="Consumption",
+                )
 
             # invalid message or unsupported message type
             else:
@@ -307,8 +376,8 @@ def main_loop():
                 json_message,
             )
             mqttc.publish(
-                f"{settings.MQTT_BASE_TOPIC}/{meter_id}",
-                json_message,
+                topic=f"{settings.MQTT_BASE_TOPIC}/{meter_id}",
+                payload=json_message,
             )
 
         except Exception as ex:  # pylint: disable=broad-except

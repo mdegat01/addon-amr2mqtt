@@ -36,10 +36,16 @@ MQTT_USERNAME = os.environ.get("MQTT_USERNAME")
 MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD")
 MQTT_CLIENT_ID = os.environ.get("MQTT_CLIENT_ID")
 
+# Get discovery info
+SW_VERSION = os.environ.get("BUILD_VERSION")
+HA_DISCOVERY_DISABLED = bool(os.environ.get("HA_DISCOVERY_DISABLED"))
+discovery_topic = os.environ.get("HA_DISCOVERY_TOPIC")
+HA_DISCOVERY_TOPIC = discovery_topic if bool(discovery_topic) else "homeassistant"
+
 # Set the MQTT base topic
-MQTT_DEFAULT_BASE_TOPIC = "amr2mqtt"
-if os.environ.get("MQTT_BASE_TOPIC"):
-    MQTT_BASE_TOPIC = os.environ.get("MQTT_BASE_TOPIC")
+base_topic = os.environ.get("MQTT_BASE_TOPIC")
+MQTT_BASE_TOPIC = base_topic if bool(base_topic) else "amr2mqtt"
+MQTT_AVAILABILTY_TOPIC = f"{MQTT_BASE_TOPIC}/bridge/state"
 
 # Set up logging
 EV_TO_LOG_LEVEL = {

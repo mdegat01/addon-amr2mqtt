@@ -133,7 +133,7 @@ Name for the meter. Only used in discovery messages.
 
 #### Sub-option: `type`
 
-Type of meter. must be one of the following: `gas`, `water`, or `electric`. Only
+Type of meter. must be one of the following: `gas`, `water`, or `energy`. Only
 used in discovery messages.
 
 #### Sub-option: `reading_multiplier`

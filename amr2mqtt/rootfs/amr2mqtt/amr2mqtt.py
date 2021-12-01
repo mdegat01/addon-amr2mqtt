@@ -375,10 +375,17 @@ def main_loop():
                 msg_type,
                 json_message,
             )
-            mqttc.publish(
-                topic=f"{settings.MQTT_BASE_TOPIC}/{meter_id}",
-                payload=json_message,
-            )
+
+            # Don't publish messages for watched meters that are the wrong protocol
+            # Seemed either some meters were dual protocool or two had duplicate IDs
+            if (
+                meter_id not in settings.METERS
+                or msg_type == settings.METERS[meter_id].protocol
+            ):
+                mqttc.publish(
+                    topic=f"{settings.MQTT_BASE_TOPIC}/{meter_id}",
+                    payload=json_message,
+                )
 
         except Exception as ex:  # pylint: disable=broad-except
             logging.debug("Exception squashed! %s: %s", ex.__class__.__name__, ex)

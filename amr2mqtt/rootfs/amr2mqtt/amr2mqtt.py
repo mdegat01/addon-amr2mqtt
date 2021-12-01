@@ -380,7 +380,7 @@ def main_loop():
             # Seemed either some meters were dual protocool or two had duplicate IDs
             if (
                 meter_id not in settings.METERS
-                or msg_type == settings.METERS[meter_id].protocol
+                or msg_type == settings.METERS[meter_id]["protocol"]
             ):
                 mqttc.publish(
                     topic=f"{settings.MQTT_BASE_TOPIC}/{meter_id}",

@@ -205,6 +205,34 @@ watched meters.
 Defaults to `homeassistant`. Set if you use a custom MQTT discovery prefix in
 Home Assistant.
 
+## Troubleshooting
+
+If you see the addon's log filling up with messages that look like this:
+
+```txt
+ll+, now 327
+ll+, now 328
+ll+, now 329
+ll+, now 330
+```
+
+My understanding is that it means your hardware is underpowered for the task you're
+asking it to do. R900 messages specifically seem to require a lot of work to process
+and not all machines can keep up. See [here][reddit-ll-issue] for a full explanation.
+
+If you are doing debug and discovery and have `watched_meters` set to empty then
+you can just ignore this. Just finish yoour debugging and then fill in `watched_meters`
+so it only processes messages in the protocol(s) you need. Hopefully it will go
+away then.
+
+If you are seeing this with `watched_meters` filled in then you have an issue since
+a meter you're trying to watch is using a protocol your machine can't handle.
+Unfortunately I don't have a solution for you in this case, it seems like you won't
+be able watch that meter. There are lots of communities for rtlamr as well as the
+[github repo][github-rtlamr] so you may be able to come up with a solution. If
+you do and it requires an enhancement to the addon feel free to submit an issue
+with the info and I'll see what I can do.
+
 ## Changelog & Releases
 
 This repository keeps a change log using [GitHub's releases][releases]
@@ -273,12 +301,14 @@ SOFTWARE.
 [discord-ha]: https://discord.gg/c5DvZ4e
 [forum-centralcommand]: https://community.home-assistant.io/u/CentralCommand/?u=CentralCommand
 [forum]: https://community.home-assistant.io
+[github-rtlamr]: https://github.com/bemasher/rtlamr
 [ha-mqtt-discovery]: https://www.home-assistant.io/docs/mqtt/discovery/#discovery-topic
 [issue]: https://github.com/mdegat01/addon-amr2mqtt/issues
 [mdegat01]: https://github.com/mdegat01
 [mqtt-explorer]: https://mqtt-explorer.com/
 [nesdr-nano-2plus]: https://www.amazon.com/NooElec-NESDR-Nano-Ultra-Low-Compatible/dp/B01B4L48QU
 [ragingcomputer]: https://github.com/ragingcomputer
+[reddit-ll-issue]: https://www.reddit.com/r/RTLSDR/comments/bjc4mk/tweakstips_for_reading_meters_with_rtlamr/em8vnwn/
 [releases]: https://github.com/mdegat01/addon-amr2mqtt/releases
 [rtl-sdr-dongle]: https://www.amazon.com/s?k=RTL2832U
 [semver]: http://semver.org/spec/v2.0.0

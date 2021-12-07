@@ -223,6 +223,7 @@ def create_sensor(attribute, device_name, device_id, enabled=True):
     return {
         "enabled_by_default": enabled,
         "name": f"{device_name} {name}",
+        "state_class": "measurement",
         "unique_id": f"{device_id}_{attribute}",
         "value_template": f"{{{{ value_json.{attribute} }}}}",
     }
@@ -237,7 +238,6 @@ def publish_sensor_discovery(meter_id, device, attribute, payload):
             }
         ],
         "device": device,
-        "state_class": "measurement",
         "state_topic": f"{settings.MQTT_BASE_TOPIC}/{meter_id}",
         "platform": "mqtt",
     }

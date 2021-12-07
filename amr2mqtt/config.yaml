@@ -25,7 +25,7 @@ schema:
       protocol: list(idm|netidm|r900|scm|scm+)
       name: str?
       type: list(gas|water|energy)?
-      reading_decimals: int(0,)?
+      consumption_decimals: int(0,)?
       reading_unit_of_measurement: str?
   mqtt:
     host: str?

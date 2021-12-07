@@ -206,6 +206,21 @@ watched meters.
 Defaults to `homeassistant`. Set if you use a custom MQTT discovery prefix in
 Home Assistant.
 
+## Home Assistant
+
+If you enable discovery then on start-up this add-on will send MQTT messages telling
+Home Assistant to make a device with the name you specified for each watched meter.
+Then based on the type you specified for the meter it will send messages telling
+Home Assistant to make a sensor for each expected attribute of readings from that
+meter. Info on these can be found [here][rtlamr-protocols].
+
+For most protocols only one sensor will be enabled by default, the current consumption
+value. If your meter uses the `idm` or `netidm` protocol then there will be a second
+enabled by default - the consumption value of the last interval. This sensor will
+also have the consumption values of all intervals in an array in its `DifferentialConsumptionIntervals`
+attribute. The sensors for all other attributes are disabled by default but you
+can enable any you want to use.
+
 ## Troubleshooting
 
 If you see the addon's log filling up with messages that look like this:
@@ -312,4 +327,5 @@ SOFTWARE.
 [reddit-ll-issue]: https://www.reddit.com/r/RTLSDR/comments/bjc4mk/tweakstips_for_reading_meters_with_rtlamr/em8vnwn/
 [releases]: https://github.com/mdegat01/addon-amr2mqtt/releases
 [rtl-sdr-dongle]: https://www.amazon.com/s?k=RTL2832U
+[rtlamr-protocols]: https://github.com/bemasher/rtlamr/wiki/Protocol
 [semver]: http://semver.org/spec/v2.0.0

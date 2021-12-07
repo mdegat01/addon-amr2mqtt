@@ -136,15 +136,16 @@ Name for the meter. Only used in discovery messages.
 Type of meter. must be one of the following: `gas`, `water`, or `energy`. Only
 used in discovery messages.
 
-#### Sub-option: `reading_multiplier`
+#### Sub-option: `consumption_decimals`
 
-Used to convert the consumption number to the unit of your choice. Consumption
-numbers are whole numbers only so they may be in a weird unit, like hundredths
-of a kWh. Readings will be multiplied by this number before being reported to
-MQTT so you can convert to the unit you actually see on your bill.
+Meters can only report consumption in whole numbers and as a result they are
+generally in an undesirable unit, like hundredsth of a kWh. Use this to convert
+to a preferred unit by saying how many of the digits should be a decimal. Consumption
+values in readings will be multiplied by `10^-<consumption_decimals>` before being
+reported to MQTT so you can convert to the unit you actually see on your bill.
 
-**Note:** If your meter uses `idm` or `netidm` then the consumption value for
-each interval will also be multiplied by this number.
+**Note:** If your meter uses `idm` or `netidm` then the this formula will be used
+to convert the consumption value for each interval as well.
 
 #### Sub-option: `reading_unit_of_measurement`
 

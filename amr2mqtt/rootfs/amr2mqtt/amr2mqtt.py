@@ -281,15 +281,17 @@ def send_discovery_messages():
 def adjust_reading(meter_id, reading, consumption_field, interval_field=None):
     """Convert consumption and interval data using configured multiplier."""
     if meter_id in settings.METERS:
-        multiplier = settings.METERS[meter_id].get("reading_multiplier", 1)
+        decimals = settings.METERS[meter_id].get("consumption_decimals", 0)
     else:
-        multiplier = 1
+        decimals = 0
 
-    reading["Consumption"] = reading[consumption_field] * multiplier
+    multiplier = 10 ** (-1 * decimals)
+    reading["Consumption"] = round(reading[consumption_field] * multiplier, decimals)
 
     if interval_field:
         reading["DifferentialConsumptionIntervals"] = [
-            interval * multiplier for interval in reading[interval_field]
+            round(interval * multiplier, decimals)
+            for interval in reading[interval_field]
         ]
 
 

@@ -5,6 +5,7 @@ found to MQTT at topic `amr2mqtt/{meter_ID}`. If meter ID
 is a watched one, processes its reading using settings first.
 
 """
+from datetime import timedelta
 import logging
 import subprocess
 import signal
@@ -14,7 +15,18 @@ import json
 import re
 import paho.mqtt.client as mqtt
 import settings
+from dateutil import parser
 
+LAST_INTERVAL_ATTR = "LastIntervalConsumption"
+CONSUMPTION_FIELD = "Consumption"
+ID_FIELD = "ID"
+INTERVAL_FIELD = "DifferentialConsumptionIntervals"
+INTERVAL_START_FIELD = "IntervalStart"
+IDM_TIME_OFFSET_FIELD = "TransmitTimeOffset"
+IDM_ID_FIELD = "ERTSerialNumber"
+IDM_CONSUMPTION_FIELD = "LastConsumptionCount"
+NETIDM_CONSUMPTION_FIELD = "LastConsumptionNet"
+SCMPLUS_ID_FIELD = "EndpointID"
 ALL_IDM = [
     "Preamble",
     "PacketLength",
@@ -22,7 +34,7 @@ ALL_IDM = [
     "ApplicationVersion",
     "ERTType",
     "ConsumptionIntervalCount",
-    "TransmitTimeOffset",
+    IDM_TIME_OFFSET_FIELD,
     "SerialNumberCRC",
     "PacketCRC",
 ]
@@ -175,11 +187,12 @@ def create_interval_sensor(meter_id, meter, device_name, device_id):
         payload={
             "enabled_by_default": True,
             "name": f"{device_name} Last Interval Consumption",
-            "unique_id": f"{device_id}_LastIntervalConsumption",
-            "value_template": "{{ value_json.DifferentialConsumptionIntervals[0] }}",
+            "unique_id": f"{device_id}_{LAST_INTERVAL_ATTR}",
+            "value_template": f"{{{{ value_json.{INTERVAL_FIELD}[0] }}}}",
             "json_attributes_topic": f"{settings.MQTT_BASE_TOPIC}/{meter_id}",
             "json_attributes_template": {
-                "DifferentialConsumptionIntervals": "{{ value_json.DifferentialConsumptionIntervals }}",  # pylint: disable=line-too-long
+                INTERVAL_FIELD: f"{{{{ value_json.{INTERVAL_FIELD} }}}}",
+                "last_reset": f"{{{{ value_json.{INTERVAL_START_FIELD} }}}}",
             },
         },
         meter=meter,
@@ -188,6 +201,7 @@ def create_interval_sensor(meter_id, meter, device_name, device_id):
 
 def set_consumption_details(payload, meter):
     """Set discovery details for a consumption sensor."""
+    payload["state_class"] = "total"
     if "type" in meter:
         if meter["type"] == "gas":
             payload["device_class"] = "gas"
@@ -196,8 +210,8 @@ def set_consumption_details(payload, meter):
         else:
             payload["icon"] = "mdi:water"
 
-    if "reading_unit_of_measurement" in meter:
-        payload["unit_of_measurement"] = meter["reading_unit_of_measurement"]
+    if "unit_of_measurement" in meter:
+        payload["unit_of_measurement"] = meter["unit_of_measurement"]
 
     return payload
 
@@ -249,13 +263,13 @@ def send_discovery_messages():
 
         # All meters have a consumption sensor
         consumption = set_consumption_details(
-            payload=create_sensor("Consumption", device_name, device_id),
+            payload=create_sensor(CONSUMPTION_FIELD, device_name, device_id),
             meter=meter,
         )
         publish_sensor_discovery(
             meter_id=meter_id,
             device=device,
-            attribute="Consumption",
+            attribute=CONSUMPTION_FIELD,
             payload=consumption,
         )
 
@@ -264,7 +278,7 @@ def send_discovery_messages():
             publish_sensor_discovery(
                 meter_id=meter_id,
                 device=device,
-                attribute="LastIntervalConsumption",
+                attribute=LAST_INTERVAL_ATTR,
                 payload=create_interval_sensor(meter_id, meter, device_name, device_id),
             )
 
@@ -278,21 +292,32 @@ def send_discovery_messages():
             )
 
 
-def adjust_reading(meter_id, reading, consumption_field, interval_field=None):
+def adjust_reading(
+    reading_time,
+    meter_id,
+    reading,
+    consumption_field,
+    has_intervals=False,
+):
     """Convert consumption and interval data using configured multiplier."""
-    if meter_id in settings.METERS:
-        decimals = settings.METERS[meter_id].get("consumption_decimals", 0)
+    meter = settings.METERS.get(meter_id, {})
+    multiplier = meter.get("multiplier", 1)
+    precision = meter.get("precision", -1)
+
+    if precision > -1:
+        convert = lambda value: round(value * multiplier, precision)
     else:
-        decimals = 0
+        convert = lambda value: value * multiplier
 
-    multiplier = 10 ** (-1 * decimals)
-    reading["Consumption"] = round(reading[consumption_field] * multiplier, decimals)
+    reading[CONSUMPTION_FIELD] = convert(reading[consumption_field])
 
-    if interval_field:
-        reading["DifferentialConsumptionIntervals"] = [
-            round(interval * multiplier, decimals)
-            for interval in reading[interval_field]
+    if has_intervals:
+        reading[INTERVAL_FIELD] = [
+            convert(interval) for interval in reading[INTERVAL_FIELD]
         ]
+        interval_seconds = reading[IDM_TIME_OFFSET_FIELD] / 16
+        interval_start = reading_time - timedelta(seconds=interval_seconds)
+        reading[INTERVAL_START_FIELD] = interval_start.isoformat()
 
 
 def main_loop():
@@ -308,58 +333,64 @@ def main_loop():
                 continue
 
             amr_message = amr_dict["Message"]
+            amr_time = parser.parse(amr_dict["Time"])
             fields_count = len(amr_message.values())
 
             # IDM results have 17 fields
             if fields_count == 17:
                 msg_type = "idm"
-                meter_id = str(amr_message["ERTSerialNumber"])
+                meter_id = str(amr_message[IDM_ID_FIELD])
                 adjust_reading(
+                    reading_time=amr_time,
                     meter_id=meter_id,
                     reading=amr_message,
-                    consumption_field="LastConsumptionCount",
-                    interval_field="DifferentialConsumptionIntervals",
+                    consumption_field=IDM_CONSUMPTION_FIELD,
+                    has_intervals=True,
                 )
 
             # NetIDM results have 16 fields
             elif fields_count == 16:
                 msg_type = "netidm"
-                meter_id = str(amr_message["ERTSerialNumber"])
+                meter_id = str(amr_message[IDM_ID_FIELD])
                 adjust_reading(
+                    reading_time=amr_time,
                     meter_id=meter_id,
                     reading=amr_message,
-                    consumption_field="LastConsumptionNet",
-                    interval_field="DifferentialConsumptionIntervals",
+                    consumption_field=NETIDM_CONSUMPTION_FIELD,
+                    has_intervals=True,
                 )
 
             # R900 results have 9 fields
             elif fields_count == 9:
                 msg_type = "r900"
-                meter_id = str(amr_message["ID"])
+                meter_id = str(amr_message[ID_FIELD])
                 adjust_reading(
+                    reading_time=amr_time,
                     meter_id=meter_id,
                     reading=amr_message,
-                    consumption_field="Consumption",
+                    consumption_field=CONSUMPTION_FIELD,
                 )
 
             # SCM results have 6 fields
             elif fields_count == 6:
                 msg_type = "scm"
-                meter_id = str(amr_message["ID"])
+                meter_id = str(amr_message[ID_FIELD])
                 adjust_reading(
+                    reading_time=amr_time,
                     meter_id=meter_id,
                     reading=amr_message,
-                    consumption_field="Consumption",
+                    consumption_field=CONSUMPTION_FIELD,
                 )
 
             # SCM+ results have 7 fields
             elif fields_count == 7:
                 msg_type = "scm+"
-                meter_id = str(amr_message["EndpointID"])
+                meter_id = str(amr_message[SCMPLUS_ID_FIELD])
                 adjust_reading(
+                    reading_time=amr_time,
                     meter_id=meter_id,
                     reading=amr_message,
-                    consumption_field="Consumption",
+                    consumption_field=CONSUMPTION_FIELD,
                 )
 
             # invalid message or unsupported message type

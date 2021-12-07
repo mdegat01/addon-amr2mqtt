@@ -34,6 +34,7 @@ RUN set -eux; \
         ca-certificates=20210119 \
         librtlsdr-dev=0.6.0-3 \
         python3-paho-mqtt=1.5.1-1 \
+        python3-dateutil=2.8.1-6 \
         rtl-sdr=0.6.0-3 \
         ; \
     update-ca-certificates; \

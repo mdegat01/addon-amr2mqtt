@@ -103,8 +103,8 @@ watched_meters:
     protocol: scm
     name: My gas meter
     type: gas
-    reading_multiplier: 0.01
-    reading_unit_of_measurement: ccf
+    multiplier: 0.01
+    unit_of_measurement: ccf
 mqtt:
   host: 127.0.0.1
   port: 1883
@@ -136,18 +136,26 @@ Name for the meter. Only used in discovery messages.
 Type of meter. must be one of the following: `gas`, `water`, or `energy`. Only
 used in discovery messages.
 
-#### Sub-option: `consumption_decimals`
+#### Sub-option: `multiplier`
 
 Meters can only report consumption in whole numbers and as a result they are
 generally in an undesirable unit, like hundredsth of a kWh. Use this to convert
-to a preferred unit by saying how many of the digits should be a decimal. Consumption
-values in readings will be multiplied by `10^-<consumption_decimals>` before being
-reported to MQTT so you can convert to the unit you actually see on your bill.
+the consumption value reported by your meter to your preferred unit of measurement.
 
-**Note:** If your meter uses `idm` or `netidm` then the this formula will be used
-to convert the consumption value for each interval as well.
+Examples:
 
-#### Sub-option: `reading_unit_of_measurement`
+- Consumption values in hundredsth of a kWh and you want kWh: set to `0.01`
+- Consumption values in ccf and you want cubic meters: set to `2.83168466`
+
+**Note:** If your meter uses `idm` or `netidm` then this multiplier will also be
+used to convert the consumption value for each interval.
+
+#### Sub-option: `precision`
+
+Reported consumption values will be rounded to this many decimal places after the
+multiplier is applied. If omitted, result will not be rounded.
+
+#### Sub-option: `unit_of_measurement`
 
 Unit of measurement for the consumption value. Only used in discovery messages.
 

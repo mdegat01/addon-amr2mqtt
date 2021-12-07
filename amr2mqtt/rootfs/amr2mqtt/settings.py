@@ -16,8 +16,8 @@ def make_meters_map(meters, meter):
 # Pull in watched meters data
 # If not empty, pull out IDs/protocols to watch
 # If empty then we're in discovery mode
-config_options = open("/data/options.json")
-meters_config = json.load(config_options)["meters"]
+with open("/data/options.json", encoding="utf-8") as config_options:
+    meters_config = json.load(config_options)["meters"]
 
 if bool(meters_config):
     METERS = functools.reduce(make_meters_map, meters_config, {})

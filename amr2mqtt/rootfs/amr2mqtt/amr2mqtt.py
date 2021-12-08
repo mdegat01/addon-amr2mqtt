@@ -191,10 +191,10 @@ def create_interval_sensor(meter_id, meter, device_name, device_id):
             "unique_id": f"{device_id}_{LAST_INTERVAL_ATTR}",
             "value_template": f"{{{{ value_json.{INTERVAL_FIELD}[0] }}}}",
             "json_attributes_topic": f"{settings.MQTT_BASE_TOPIC}/{meter_id}",
-            "json_attributes_template": {
-                INTERVAL_FIELD: f"{{{{ value_json.{INTERVAL_FIELD} }}}}",
-                "last_reset": f"{{{{ value_json.{INTERVAL_START_FIELD} }}}}",
-            },
+            "json_attributes_template": f"""{{{{ {{
+                '{INTERVAL_FIELD}': value_json.{INTERVAL_FIELD},
+                'last_reset': value_json.{INTERVAL_START_FIELD},
+            }} | tojson }}}}""",
         },
         meter=meter,
     )
@@ -312,7 +312,7 @@ def adjust_reading(
 
     reading[CONSUMPTION_FIELD] = convert(reading[consumption_field])
 
-    if idm_interval:
+    if idm_interval is not None:
         reading[INTERVAL_FIELD] = [
             convert(interval) for interval in reading[INTERVAL_FIELD]
         ]

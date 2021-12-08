@@ -21,6 +21,7 @@ LAST_INTERVAL_ATTR = "LastIntervalConsumption"
 CONSUMPTION_FIELD = "Consumption"
 ID_FIELD = "ID"
 INTERVAL_FIELD = "DifferentialConsumptionIntervals"
+INTERVAL_ID_FIELD = "ConsumptionIntervalCount"
 INTERVAL_START_FIELD = "IntervalStart"
 IDM_TIME_OFFSET_FIELD = "TransmitTimeOffset"
 IDM_ID_FIELD = "ERTSerialNumber"
@@ -33,7 +34,7 @@ ALL_IDM = [
     "HammingCode",
     "ApplicationVersion",
     "ERTType",
-    "ConsumptionIntervalCount",
+    INTERVAL_ID_FIELD,
     IDM_TIME_OFFSET_FIELD,
     "SerialNumberCRC",
     "PacketCRC",
@@ -297,7 +298,7 @@ def adjust_reading(
     meter_id,
     reading,
     consumption_field,
-    has_intervals=False,
+    idm_interval=None,
 ):
     """Convert consumption and interval data using configured multiplier."""
     meter = settings.METERS.get(meter_id, {})
@@ -311,17 +312,24 @@ def adjust_reading(
 
     reading[CONSUMPTION_FIELD] = convert(reading[consumption_field])
 
-    if has_intervals:
+    if idm_interval:
         reading[INTERVAL_FIELD] = [
             convert(interval) for interval in reading[INTERVAL_FIELD]
         ]
-        interval_seconds = reading[IDM_TIME_OFFSET_FIELD] / 16
-        interval_start = reading_time - timedelta(seconds=interval_seconds)
-        reading[INTERVAL_START_FIELD] = interval_start.isoformat()
+
+        if idm_interval.get(INTERVAL_ID_FIELD, -1) == reading[INTERVAL_ID_FIELD]:
+            reading[INTERVAL_START_FIELD] = idm_interval[INTERVAL_START_FIELD]
+        else:
+            interval_seconds = reading[IDM_TIME_OFFSET_FIELD] / 16
+            interval_start = reading_time - timedelta(seconds=interval_seconds)
+            reading[INTERVAL_START_FIELD] = interval_start.isoformat()
+            idm_interval[INTERVAL_ID_FIELD] = reading[INTERVAL_ID_FIELD]
+            idm_interval[INTERVAL_START_FIELD] = reading[INTERVAL_START_FIELD]
 
 
 def main_loop():
     """Loop and process messages from rtlamr."""
+    idm_intervals = {}
     mqttc.loop_start()
     while True:
         try:
@@ -340,24 +348,28 @@ def main_loop():
             if fields_count == 17:
                 msg_type = "idm"
                 meter_id = str(amr_message[IDM_ID_FIELD])
+                if meter_id not in idm_intervals:
+                    idm_intervals[meter_id] = {}
                 adjust_reading(
                     reading_time=amr_time,
                     meter_id=meter_id,
                     reading=amr_message,
                     consumption_field=IDM_CONSUMPTION_FIELD,
-                    has_intervals=True,
+                    idm_interval=idm_intervals[meter_id],
                 )
 
             # NetIDM results have 16 fields
             elif fields_count == 16:
                 msg_type = "netidm"
                 meter_id = str(amr_message[IDM_ID_FIELD])
+                if meter_id not in idm_intervals:
+                    idm_intervals[meter_id] = {}
                 adjust_reading(
                     reading_time=amr_time,
                     meter_id=meter_id,
                     reading=amr_message,
                     consumption_field=NETIDM_CONSUMPTION_FIELD,
-                    has_intervals=True,
+                    idm_interval=idm_intervals[meter_id],
                 )
 
             # R900 results have 9 fields

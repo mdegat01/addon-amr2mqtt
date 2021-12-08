@@ -191,10 +191,13 @@ def create_interval_sensor(meter_id, meter, device_name, device_id):
             "unique_id": f"{device_id}_{LAST_INTERVAL_ATTR}",
             "value_template": f"{{{{ value_json.{INTERVAL_FIELD}[0] }}}}",
             "json_attributes_topic": f"{settings.MQTT_BASE_TOPIC}/{meter_id}",
-            "json_attributes_template": f"""{{{{ {{
-                '{INTERVAL_FIELD}': value_json.{INTERVAL_FIELD},
-                'last_reset': value_json.{INTERVAL_START_FIELD},
-            }} | tojson }}}}""",
+            "json_attributes_template": (
+                "{{ {"
+                f"'{INTERVAL_FIELD}': value_json.{INTERVAL_FIELD},"
+                f"'{INTERVAL_START_FIELD}': value_json.{INTERVAL_START_FIELD},"
+                f"'last_reset': value_json.{INTERVAL_START_FIELD}"
+                "} | tojson }}"
+            ),
         },
         meter=meter,
     )

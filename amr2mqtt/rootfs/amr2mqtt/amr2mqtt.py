@@ -312,7 +312,7 @@ def adjust_reading(
 
     reading[CONSUMPTION_FIELD] = convert(reading[consumption_field])
 
-    if idm_interval:
+    if idm_interval is not None:
         reading[INTERVAL_FIELD] = [
             convert(interval) for interval in reading[INTERVAL_FIELD]
         ]

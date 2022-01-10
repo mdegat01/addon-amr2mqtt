@@ -28,6 +28,8 @@ schema:
       multiplier: float(0,)?
       precision: int(0,)?
       unit_of_measurement: str?
+      manufacturer: str?
+      model: str?
   mqtt:
     host: str?
     port: port?

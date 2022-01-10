@@ -100,7 +100,7 @@ SOFTWARE.
 [i386-shield]: https://img.shields.io/badge/i386-no-red.svg
 [issue]: https://github.com/mdegat01/addon-amr2mqtt/issues
 [license-shield]: https://img.shields.io/github/license/mdegat01/addon-amr2mqtt.svg
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2021.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg
 [project-stage-shield]: https://img.shields.io/badge/project%20stage-experimental-yellow.svg
 [ragingcomputer]: https://github.com/ragingcomputer
 [releases-shield]: https://img.shields.io/github/release/mdegat01/addon-amr2mqtt.svg

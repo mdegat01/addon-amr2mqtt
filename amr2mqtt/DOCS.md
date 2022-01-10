@@ -332,7 +332,7 @@ SOFTWARE.
 [contributors]: https://github.com/mdegat01/addon-amr2mqtt/graphs/contributors
 [discord-ha]: https://discord.gg/c5DvZ4e
 [forum-centralcommand]: https://community.home-assistant.io/u/CentralCommand/?u=CentralCommand
-[forum]: https://community.home-assistant.io
+[forum]: https://community.home-assistant.io/t/home-assistant-add-on-amr2mqtt/378196
 [github-rtlamr]: https://github.com/bemasher/rtlamr
 [ha-mqtt-discovery]: https://www.home-assistant.io/docs/mqtt/discovery/#discovery-topic
 [issue]: https://github.com/mdegat01/addon-amr2mqtt/issues

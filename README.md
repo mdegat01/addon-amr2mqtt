@@ -93,7 +93,7 @@ SOFTWARE.
 [discord-ha]: https://discord.gg/c5DvZ4e
 [forum-centralcommand]: https://community.home-assistant.io/u/CentralCommand/?u=CentralCommand
 [forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg
-[forum]: https://community.home-assistant.io
+[forum]: https://community.home-assistant.io/t/home-assistant-add-on-amr2mqtt/378196
 [mdegat01]: https://github.com/mdegat01
 [github-actions-shield]: https://github.com/mdegat01/addon-amr2mqtt/workflows/CI/badge.svg
 [github-actions]: https://github.com/mdegat01/addon-amr2mqtt/actions
@@ -101,7 +101,7 @@ SOFTWARE.
 [issue]: https://github.com/mdegat01/addon-amr2mqtt/issues
 [license-shield]: https://img.shields.io/github/license/mdegat01/addon-amr2mqtt.svg
 [maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg
-[project-stage-shield]: https://img.shields.io/badge/project%20stage-experimental-yellow.svg
+[project-stage-shield]: https://img.shields.io/badge/project%20stage-production%20ready-brightgreen.svg
 [ragingcomputer]: https://github.com/ragingcomputer
 [releases-shield]: https://img.shields.io/github/release/mdegat01/addon-amr2mqtt.svg
 [releases]: https://github.com/mdegat01/addon-amr2mqtt/releases

@@ -17,6 +17,7 @@ import paho.mqtt.client as mqtt
 import settings
 from dateutil import parser
 
+CATEGORY_DIAGNOSTIC = "diagnostic"
 LAST_INTERVAL_ATTR = "LastIntervalConsumption"
 CONSUMPTION_FIELD = "Consumption"
 ID_FIELD = "ID"
@@ -220,17 +221,22 @@ def set_consumption_details(payload, meter):
     return payload
 
 
-def create_sensor(attribute, device_name, device_id, enabled=True):
+def create_sensor(attribute, device_name, device_id, enabled=True, category=None):
     """Create generic discovery message to make reading attribute into sensor."""
     # Turn camelcase into spaces
     name = re.sub(r"([^A-Z]|ERT)([A-Z])", r"\1 \2", attribute)
-    return {
+    sensor = {
         "enabled_by_default": enabled,
         "name": f"{device_name} {name}",
         "state_class": "measurement",
         "unique_id": f"{device_id}_{attribute}",
         "value_template": f"{{{{ value_json.{attribute} }}}}",
     }
+
+    if category:
+        sensor["entity_category"] = category
+
+    return sensor
 
 
 def publish_sensor_discovery(meter_id, device, attribute, payload):
@@ -263,11 +269,22 @@ def send_discovery_messages():
             "identifiers": [device_id],
             "name": device_name,
             "sw_version": settings.SW_VERSION,
+            "via_device": settings.VIA_DEVICE,
         }
+
+        if "manufacturer" in meter:
+            device["manufacturer"] = meter["manufacturer"]
+
+        if "model" in meter:
+            device["model"] = meter["model"]
 
         # All meters have a consumption sensor
         consumption = set_consumption_details(
-            payload=create_sensor(CONSUMPTION_FIELD, device_name, device_id),
+            payload=create_sensor(
+                attribute=CONSUMPTION_FIELD,
+                device_name=device_name,
+                device_id=device_id,
+            ),
             meter=meter,
         )
         publish_sensor_discovery(
@@ -283,7 +300,12 @@ def send_discovery_messages():
                 meter_id=meter_id,
                 device=device,
                 attribute=LAST_INTERVAL_ATTR,
-                payload=create_interval_sensor(meter_id, meter, device_name, device_id),
+                payload=create_interval_sensor(
+                    meter_id=meter_id,
+                    meter=meter,
+                    device_name=device_name,
+                    device_id=device_id,
+                ),
             )
 
         # Create disabled sensors from all other attributes so people can enable if they wish
@@ -292,7 +314,13 @@ def send_discovery_messages():
                 meter_id=meter_id,
                 device=device,
                 attribute=attr,
-                payload=create_sensor(attr, device_name, device_id, enabled=False),
+                payload=create_sensor(
+                    attribute=attr,
+                    device_name=device_name,
+                    device_id=device_id,
+                    enabled=False,
+                    category=CATEGORY_DIAGNOSTIC,
+                ),
             )
 
 

@@ -60,8 +60,9 @@ ARG BUILD_REF
 ARG BUILD_REPOSITORY
 ARG BUILD_VERSION
 
-# Set version as env for use in scripts
+# Set name & version as env for use in scripts
 ENV BUILD_VERSION=${BUILD_VERSION}
+ENV BUILD_NAME=${BUILD_NAME}
 
 # Labels
 LABEL \

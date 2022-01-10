@@ -38,6 +38,7 @@ MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD")
 MQTT_CLIENT_ID = os.environ.get("MQTT_CLIENT_ID")
 
 # Get discovery info
+VIA_DEVICE = os.environ.get("BUILD_NAME")
 SW_VERSION = os.environ.get("BUILD_VERSION")
 HA_DISCOVERY_DISABLED = bool(os.environ.get("HA_DISCOVERY_DISABLED"))
 discovery_topic = os.environ.get("HA_DISCOVERY_TOPIC")

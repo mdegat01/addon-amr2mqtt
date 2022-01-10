@@ -131,11 +131,6 @@ Protocol the meter uses for its readings. Must be one of the following: `idm`,
 
 Name for the meter. Only used in discovery messages.
 
-#### Sub-option: `type`
-
-Type of meter. must be one of the following: `gas`, `water`, or `energy`. Only
-used in discovery messages.
-
 #### Sub-option: `multiplier`
 
 Meters can only report consumption in whole numbers and as a result they are
@@ -155,9 +150,22 @@ used to convert the consumption value for each interval.
 Reported consumption values will be rounded to this many decimal places after the
 multiplier is applied. If omitted, result will not be rounded.
 
+#### Sub-option: `type`
+
+Type of meter. must be one of the following: `gas`, `water`, or `energy`. Only
+used in discovery messages.
+
 #### Sub-option: `unit_of_measurement`
 
 Unit of measurement for the consumption value. Only used in discovery messages.
+
+#### Sub-option: `manufacturer`
+
+Manufacturer of the meter. Only used in discovery messages.
+
+#### Sub-option: `model`
+
+Model of the meter. Only used in discovery messages.
 
 ### Option: `mqtt.host`
 

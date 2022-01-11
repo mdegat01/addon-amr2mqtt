@@ -50,8 +50,8 @@ below.
 ## MQTT Messages
 
 This addon will publish a message to the topic `amr2mqtt/{meter_id}` each time
-it receives a message if it is from a meter listed in `watched_meters` (or if
-`watched_meters` is left blank). You can change `amr2mqtt` by setting `mqtt.base_topic`
+it receives a message if it is from a meter listed in `meters` (or if
+`meters` is left blank). You can change `amr2mqtt` by setting `mqtt.base_topic`
 (described below).
 
 The content of those messages will be a JSON representation of what was received
@@ -60,7 +60,7 @@ from `rtlamr` except:
 1. The current total consumption value will always be in `Consumption`. Some protocols
    use a different field so the add-on normalizes this.
 1. The values in `Consumption` and (if present) `DifferentialConsumptionIntervals`
-   will have been multiplied by the `reading_multiplier` for that meter (if provided).
+   will have been multiplied by the `multiplier` for that meter (if provided).
 
 The addon will also publish [discovery messages][ha-mqtt-discovery] on start-up
 to tell HA to create a device and various sensors for each meter you want to watch.
@@ -73,23 +73,23 @@ mine was 8 digits. Mine was also on a sticker with a bar code, the big number
 right below it. I don't know if yours will have the same location but it will be
 on the device.
 
-If you're having trouble finding it, set `watched_meters` to `[]` in the config.
+If you're having trouble finding it, set `meters` to `[]` in the config.
 This will cause it to capture every message from every meter in range (regardless
 of protocol) and pass them on to your MQTT broker. This way you can see them all
 using a tool like [MQTT Explorer][mqtt-explorer] and find the ID that matches a
 number you see on your device.
 
 This is also a good way to figure out the protocol your meter is using if you're
-not sure. When `watched_meters` is left empty the add-on assumes you are debugging
+not sure. When `meters` is left empty the add-on assumes you are debugging
 and adds the protocol to every message.
 
-You should not run long-term with `watched_meters` left empty. Some protocols
+You should not run long-term with `meters` left empty. Some protocols
 require a lot of processing and you will be forcing the add-on to process a lot
 messages. Once you have found your meter and figured out its protocol you should
-add it to `watched_meters` to reduce the overhead of this add-on.
+add it to `meters` to reduce the overhead of this add-on.
 
 **Note**: If you don't want to download additional software or do your debugging
-via MQTT you can also set `log_level` to `debug` while `watched_meters` is empty.
+via MQTT you can also set `log_level` to `debug` while `meters` is empty.
 When `log_level` is set to `debug` then add-on will log each message it receives
 along with the protocol and meter ID. This can get quite noisy though!
 
@@ -98,7 +98,7 @@ along with the protocol and meter ID. This can get quite noisy though!
 Example add-on configuration:
 
 ```yaml
-watched_meters:
+meters:
   - id: 12345678
     protocol: scm
     name: My gas meter
@@ -112,7 +112,7 @@ mqtt:
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
 
-### Option: `watched_meters`
+### Option: `meters`
 
 The list of meters you're tracking. `protocol` and `id` are required for each
 meter. All other fields are optional and primarily used in discovery messages
@@ -252,12 +252,12 @@ My understanding is that it means your hardware is underpowered for the task you
 asking it to do. R900 messages specifically seem to require a lot of work to process
 and not all machines can keep up. See [here][reddit-ll-issue] for a full explanation.
 
-If you are doing debug and discovery and have `watched_meters` set to empty then
-you can just ignore this. Just finish yoour debugging and then fill in `watched_meters`
+If you are doing debug and discovery and have `meters` set to empty then
+you can just ignore this. Just finish yoour debugging and then fill in `meters`
 so it only processes messages in the protocol(s) you need. Hopefully it will go
 away then.
 
-If you are seeing this with `watched_meters` filled in then you have an issue since
+If you are seeing this with `meters` filled in then you have an issue since
 a meter you're trying to watch is using a protocol your machine can't handle.
 Unfortunately I don't have a solution for you in this case, it seems like you won't
 be able watch that meter. There are lots of communities for rtlamr as well as the

@@ -49,6 +49,10 @@ base_topic = os.environ.get("MQTT_BASE_TOPIC")
 MQTT_BASE_TOPIC = base_topic if bool(base_topic) else "amr2mqtt"
 MQTT_AVAILABILTY_TOPIC = f"{MQTT_BASE_TOPIC}/bridge/state"
 
+# Using last seen
+LAST_SEEN_FORMAT = os.environ.get("LAST_SEEN")
+LAST_SEEN_ENABLED = LAST_SEEN_FORMAT != "disable"
+
 # Set up logging
 EV_TO_LOG_LEVEL = {
     "DEBUG": logging.DEBUG,

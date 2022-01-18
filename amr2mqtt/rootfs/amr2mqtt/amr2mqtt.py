@@ -5,7 +5,7 @@ found to MQTT at topic `amr2mqtt/{meter_ID}`. If meter ID
 is a watched one, processes its reading using settings first.
 
 """
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 import logging
 import subprocess
 import signal
@@ -13,6 +13,7 @@ import sys
 import time
 import json
 import re
+import math
 import paho.mqtt.client as mqtt
 import settings
 from dateutil import parser
@@ -29,6 +30,7 @@ IDM_ID_FIELD = "ERTSerialNumber"
 IDM_CONSUMPTION_FIELD = "LastConsumptionCount"
 NETIDM_CONSUMPTION_FIELD = "LastConsumptionNet"
 SCMPLUS_ID_FIELD = "EndpointID"
+LAST_SEEN_ATTR = "'last_seen': value_json.last_seen"
 ALL_IDM = [
     "Preamble",
     "PacketLength",
@@ -185,6 +187,8 @@ def create_mqtt_client():
 
 def create_interval_sensor(meter_id, meter, device_name, device_id):
     """Create discovery message for interval consumption sensor."""
+    last_seen_attr = f"{LAST_SEEN_ATTR}," if settings.LAST_SEEN_ENABLED else ""
+
     return set_consumption_details(
         payload={
             "enabled_by_default": True,
@@ -196,6 +200,7 @@ def create_interval_sensor(meter_id, meter, device_name, device_id):
                 "{{ {"
                 f"'{INTERVAL_FIELD}': value_json.{INTERVAL_FIELD},"
                 f"'{INTERVAL_START_FIELD}': value_json.{INTERVAL_START_FIELD},"
+                f"{last_seen_attr}"
                 f"'last_reset': value_json.{INTERVAL_START_FIELD}"
                 "} | tojson }}"
             ),
@@ -235,6 +240,11 @@ def create_sensor(attribute, device_name, device_id, enabled=True, category=None
 
     if category:
         sensor["entity_category"] = category
+
+    if settings.LAST_SEEN_ENABLED:
+        sensor[
+            "json_attributes_template"
+        ] = f"{{{{ {{ {LAST_SEEN_ATTR} }} | tojson }}}}"
 
     return sensor
 
@@ -439,6 +449,23 @@ def main_loop():
             # invalid message or unsupported message type
             else:
                 continue
+
+            # Add last seen if in use
+            if settings.LAST_SEEN_ENABLED:
+                if settings.LAST_SEEN_FORMAT == "ISO_8601":
+                    last_seen = (
+                        datetime.now().replace(microsecond=0).astimezone().isoformat()
+                    )
+                elif settings.LAST_SEEN_FORMAT == "ISO_8601_local":
+                    last_seen = (
+                        datetime.utcnow()
+                        .replace(microsecond=0, tzinfo=timezone.utc)
+                        .isoformat()
+                    )
+                else:
+                    last_seen = math.floor(time.time())
+
+                amr_message["last_seen"] = last_seen
 
             # If in debugging mode, add the protocol to the message
             if settings.WATCHED_PROTOCOLS == "all":

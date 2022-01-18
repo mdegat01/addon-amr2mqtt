@@ -212,6 +212,12 @@ Client ID to use when connecting to the MQTT broker.
 By default, the topics of all MQTT messages begins with `amr2mqtt/{meter_ID}`.
 If you set this option then the topics will begin with `{mqtt.base_topic}/{meter_id}`.
 
+### Option: `last_seen`
+
+Add `last_seen` field to each message with the current time in the specified format.
+Options are: `ISO_8601`, `ISO_8601_local`, and `epoch`. Disabled if omitted. Useful
+for detecting issues when meter normally reports in on a consistent interval.
+
 ### Option: `home_assistant_discovery_enabled`
 
 Set to `false` to disable the add-on from sending discovery messages for the

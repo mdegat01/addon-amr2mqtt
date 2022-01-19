@@ -452,11 +452,11 @@ def main_loop():
 
             # Add last seen if in use
             if settings.LAST_SEEN_ENABLED:
-                if settings.LAST_SEEN_FORMAT == "ISO_8601":
+                if settings.LAST_SEEN_FORMAT == "ISO_8601_local":
                     last_seen = (
                         datetime.now().replace(microsecond=0).astimezone().isoformat()
                     )
-                elif settings.LAST_SEEN_FORMAT == "ISO_8601_local":
+                elif settings.LAST_SEEN_FORMAT == "ISO_8601":
                     last_seen = (
                         datetime.utcnow()
                         .replace(microsecond=0, tzinfo=timezone.utc)

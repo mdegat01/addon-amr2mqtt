@@ -26,7 +26,8 @@ RUN set -eux; \
     rm /tmp/rtlamr.tar.gz;
 
 # https://github.com/hassio-addons/addon-debian-base/releases
-FROM ${BUILD_FROM}:5.3.1
+# hadolint ignore=DL3006
+FROM ${BUILD_FROM}
 
 RUN set -eux; \
     apt-get update; \

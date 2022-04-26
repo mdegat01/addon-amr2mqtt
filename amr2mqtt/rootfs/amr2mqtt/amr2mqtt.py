@@ -413,8 +413,9 @@ def main_loop():
                     idm_interval=idm_intervals[meter_id],
                 )
 
-            # R900 results have 9 fields
-            elif fields_count == 9:
+            # R900 results have 9 fields according to docs. But user reports
+            # suggest 8. Accept both since I don't have an R900 to test
+            elif fields_count in [8, 9]:
                 msg_type = "r900"
                 meter_id = str(amr_message[ID_FIELD])
                 adjust_reading(

@@ -26,7 +26,7 @@ RUN set -eux; \
     rm /tmp/rtlamr.tar.gz;
 
 # https://github.com/hassio-addons/addon-debian-base/releases
-FROM ${BUILD_FROM}:5.2.3
+FROM ${BUILD_FROM}:5.3.1
 
 RUN set -eux; \
     apt-get update; \

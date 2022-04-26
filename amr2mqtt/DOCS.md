@@ -228,6 +228,15 @@ watched meters.
 Defaults to `homeassistant`. Set if you use a custom MQTT discovery prefix in
 Home Assistant.
 
+### Option: `rtlamr_symbol_length`
+
+Sets symbollength in the rtlamr command used internally. If you are having issues
+with high CPU usage, try lowering this number. Your goal should be to set it as
+low as possible while still seeing results from your meter(s).
+
+Valid values are: 8, 32, 40, 48, 56, 64, 72, 80, 88, 96. Default is 72. See [here][rtlamr-configuration]
+for more information on rtlamr and this option.
+
 ## Home Assistant
 
 If you enable discovery then on start-up this add-on will send MQTT messages telling
@@ -349,5 +358,6 @@ SOFTWARE.
 [reddit-ll-issue]: https://www.reddit.com/r/RTLSDR/comments/bjc4mk/tweakstips_for_reading_meters_with_rtlamr/em8vnwn/
 [releases]: https://github.com/mdegat01/addon-amr2mqtt/releases
 [rtl-sdr-dongle]: https://www.amazon.com/s?k=RTL2832U
+[rtlamr-configuration]: https://github.com/bemasher/rtlamr/wiki/Configuration
 [rtlamr-protocols]: https://github.com/bemasher/rtlamr/wiki/Protocol
 [semver]: http://semver.org/spec/v2.0.0

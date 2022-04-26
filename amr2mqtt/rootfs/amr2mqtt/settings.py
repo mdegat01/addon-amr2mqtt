@@ -53,6 +53,10 @@ MQTT_AVAILABILTY_TOPIC = f"{MQTT_BASE_TOPIC}/bridge/state"
 LAST_SEEN_FORMAT = os.environ.get("LAST_SEEN")
 LAST_SEEN_ENABLED = LAST_SEEN_FORMAT != "disable"
 
+# RTLAMR options
+symbol_length = os.environ.get("SYMBOL_LENGTH")
+SYMBOL_LENGTH = int(symbol_length) if bool(symbol_length) else 72
+
 # Set up logging
 EV_TO_LOG_LEVEL = {
     "DEBUG": logging.DEBUG,

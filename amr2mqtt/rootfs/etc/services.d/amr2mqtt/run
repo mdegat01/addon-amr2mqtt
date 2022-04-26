@@ -55,6 +55,10 @@ fi
 # --- OTHER SETTINGS ---
 export "LAST_SEEN=$(bashio::config 'last_seen' 'disable')"
 
+if bashio::config.exists 'rtlamr_symbol_length'; then
+    export "SYMBOL_LENGTH=$(bashio::config 'rtlamr_symbol_length')"
+fi
+
 # --- SET LOG LEVEL ---
 case "$(bashio::config 'log_level')" in \
     trace)      ;& \

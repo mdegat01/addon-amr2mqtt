@@ -9,6 +9,7 @@ arch:
   - armv7
   - armhf
 description: AMR2MQTT for Home Assistant
+codenotary: codenotary@degatano.com
 uart: true
 udev: true
 usb: true

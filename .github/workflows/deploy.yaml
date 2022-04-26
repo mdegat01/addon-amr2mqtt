@@ -16,5 +16,6 @@ jobs:
   workflows:
     uses: mdegat01/addon-workflows/.github/workflows/addon-deploy.yaml@main
     secrets:
+      CAS_API_KEY: ${{ secrets.CAS_API_KEY }}
       DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
       GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}

@@ -109,6 +109,7 @@ def start_rtlamr():
         settings.RTLAMR,
         f"-msgtype={settings.WATCHED_PROTOCOLS}",
         "-format=json",
+        f"-symbollength={settings.SYMBOL_LENGTH}",
     ]
 
     # Add ID filter if we have a list of IDs to watch

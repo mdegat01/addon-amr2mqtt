@@ -22,6 +22,11 @@ This list isn't exhaustive so if you don't find your meter it may still work if
 you're willing to take a gamble and order a dongle anyway. But just bear in mind
 this solution is not universal and YMMV.
 
+**Update:** I had a number of issues with the NooElec. Lots of others seem to have
+success with it so maybe I got a bad one? It kept losing connection after a bit
+and I had to unplug it and plug it back in to fix it. I switched to [this one][rtl-sdr-com-dongle]
+from rtl-sdr.com and haven't had any issues since.
+
 ## Install
 
 First add the repository to the add-on store (`https://github.com/mdegat01/hassio-addons`):
@@ -357,6 +362,7 @@ SOFTWARE.
 [ragingcomputer]: https://github.com/ragingcomputer
 [reddit-ll-issue]: https://www.reddit.com/r/RTLSDR/comments/bjc4mk/tweakstips_for_reading_meters_with_rtlamr/em8vnwn/
 [releases]: https://github.com/mdegat01/addon-amr2mqtt/releases
+[rtl-sdr-com-dongle]: https://www.rtl-sdr.com/buy-rtl-sdr-dvb-t-dongles/
 [rtl-sdr-dongle]: https://www.amazon.com/s?k=RTL2832U
 [rtlamr-configuration]: https://github.com/bemasher/rtlamr/wiki/Configuration
 [rtlamr-protocols]: https://github.com/bemasher/rtlamr/wiki/Protocol

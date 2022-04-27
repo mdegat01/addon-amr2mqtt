@@ -9,7 +9,7 @@ RUN set -eux; \
     apk update; \
         apk add --no-cache --virtual .build-deps \
             tar=1.34-r0 \
-            curl=7.80.0-r0 \
+            curl=7.80.0-r1 \
         ; \
     APKARCH="$(apk --print-arch)"; \
     case "${APKARCH}" in \

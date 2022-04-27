@@ -307,6 +307,7 @@ def send_discovery_messages():
                 category=CATEGORY_DIAGNOSTIC,
             )
             last_seen["device_class"] = "timestamp"
+            last_seen["name"] = "Last Seen"
             publish_sensor_discovery(
                 meter_id=meter_id,
                 device=device,

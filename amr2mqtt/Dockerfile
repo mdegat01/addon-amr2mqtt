@@ -43,13 +43,13 @@ RUN set -eux; \
     \
     echo "Add user for AMR2MQTT"; \
     mkdir -p /data/amr2mqtt; \
-    useradd -u 12345 -U -d /data/amr2mqtt abc;
+    useradd -u 12345 -U -d /data/amr2mqtt abc; 
 
 # Add rtlamr
 COPY --from=build_rtlamr /usr/bin/rtlamr /usr/bin/rtlamr
 RUN rtlamr --version
 
-COPY rootfs /
+COPY --chown=abc:abc rootfs /
 WORKDIR /data/amr2mqtt
 
 # Build arguments

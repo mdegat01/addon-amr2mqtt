@@ -83,3 +83,6 @@ else
 fi
 bashio::log.info "Ensure MQTT broker is reachable at ${host}:${port} (60s timeout)"
 bashio::net.wait_for "${port}" "${host}"
+
+# --- FIX PERMISSIONS ---
+chmod 555 /data/options.json

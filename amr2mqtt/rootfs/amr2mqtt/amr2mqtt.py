@@ -82,7 +82,7 @@ ATTRIBUTES = {
 }
 
 
-def shutdown(**_):
+def shutdown(*args, **kwargs):  # pylint: disable=unused-argument
     """Disconnect MQTT client, stop rtlamr and exit."""
     mqttc.publish(
         topic=settings.MQTT_AVAILABILTY_TOPIC,

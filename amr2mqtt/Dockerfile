@@ -1,7 +1,7 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base/amd64
 
 # https://hub.docker.com/_/alpine
-FROM alpine:3.16.2 as build_rtlamr
+FROM alpine:3.17.0 as build_rtlamr
 # https://github.com/bemasher/rtlamr/releases
 ENV RTLAMR_VERSION 0.9.1
 

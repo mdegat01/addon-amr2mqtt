@@ -160,6 +160,10 @@ multiplier is applied. If omitted, result will not be rounded.
 Type of meter. must be one of the following: `gas`, `water`, or `energy`. Only
 used in discovery messages.
 
+#### Sub-option: `state_class`
+
+Type of state class. Defaults to total. 'Total_increasing' is commonly used for water and gas meters where value would not normally decrease. 
+
 #### Sub-option: `unit_of_measurement`
 
 Unit of measurement for the consumption value. Only used in discovery messages.

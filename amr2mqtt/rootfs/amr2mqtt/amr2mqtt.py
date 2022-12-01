@@ -210,12 +210,18 @@ def create_interval_sensor(meter_id, meter, device_name, device_id):
 
 def set_consumption_details(payload, meter):
     """Set discovery details for a consumption sensor."""
-    payload["state_class"] = "total"
+    if "state_class" in meter:
+        payload["state_class"] = meter["state"]
+    else: 
+        payload["state_class"] = "total"
+
     if "type" in meter:
         if meter["type"] == "gas":
             payload["device_class"] = "gas"
         elif meter["type"] == "energy":
             payload["device_class"] = "energy"
+        elif meter["type"] == "water":
+            payload["device_class"] = "water"    
         else:
             payload["icon"] = "mdi:water"
 

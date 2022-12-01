@@ -32,6 +32,7 @@ schema:
       unit_of_measurement: str?
       manufacturer: str?
       model: str?
+      state_class: str?
   mqtt:
     host: str?
     port: port?

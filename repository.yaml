@@ -1,5 +1,0 @@
-
-# https://developers.home-assistant.io/docs/add-ons/repository#repository-configuration
-name: Example Home Assistant add-on repository
-url: 'https://github.com/johntdyer/addon-amr2mqtt'
-maintainer: John Dyer

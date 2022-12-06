@@ -57,6 +57,15 @@ LAST_SEEN_ENABLED = LAST_SEEN_FORMAT != "disable"
 symbol_length = os.environ.get("SYMBOL_LENGTH")
 SYMBOL_LENGTH = int(symbol_length) if bool(symbol_length) else 72
 
+
+
+remote_rtl_tcp_port = os.environ.get("RTL_TCP_PORT")
+REMOTE_RTL_TCP_PORT = int(remote_rtl_tcp_port) if bool(remote_rtl_tcp_port) else 1234
+
+if bool(os.environ.get("RTL_TCP_HOST")):
+  REMOTE_RTL_TCP_HOST = os.environ.get("RTL_TCP_HOST")
+
+
 # Set up logging
 EV_TO_LOG_LEVEL = {
     "DEBUG": logging.DEBUG,

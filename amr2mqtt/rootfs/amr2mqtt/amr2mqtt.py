@@ -112,6 +112,10 @@ def start_rtlamr():
         "-format=json",
         f"-symbollength={settings.SYMBOL_LENGTH}",
     ]
+    if settings.REPORT_RTL_TCP_HOST != None:
+      rtlamr_cmd.append(f"-a {settings.REPORT_RTL_TCP_HOST}")
+      rtlamr_cmd.append(f"-p {settings.REPORT_RTL_TCP_PORT}")
+
 
     # Add ID filter if we have a list of IDs to watch
     if settings.WATCHED_PROTOCOLS != "all":

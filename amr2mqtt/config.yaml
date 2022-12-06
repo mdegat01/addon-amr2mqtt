@@ -47,3 +47,5 @@ schema:
   home_assistant_discovery_prefix: match(^[^+#]{1,65535}$)?
   last_seen: list(ISO_8601|ISO_8601_local|epoch)?
   rtlamr_symbol_length: list(8|32|40|48|56|64|72|80|88|96)?
+  rtl_tcp_tcp_host: str?
+  rtl_tcp_tcp_port: port?

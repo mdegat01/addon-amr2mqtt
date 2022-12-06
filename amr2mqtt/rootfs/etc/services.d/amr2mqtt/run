@@ -13,15 +13,15 @@ declare password
 # --- LOAD MQTT SETTINGS ---
 bashio::log.debug "Setting MQTT details..."
 if ! bashio::config.is_empty 'mqtt.host'; then
-    host=$(bashio::config 'mqtt.host')
-    port=$(bashio::config 'mqtt.port' 1883)
-    username=$(bashio::config 'mqtt.username')
-    password=$(bashio::config 'mqtt.password')
+  host=$(bashio::config 'mqtt.host')
+  port=$(bashio::config 'mqtt.port' 1883)
+  username=$(bashio::config 'mqtt.username')
+  password=$(bashio::config 'mqtt.password')
 else
-    host=$(bashio::services 'mqtt' 'host')
-    port=$(bashio::services 'mqtt' 'port')
-    username=$(bashio::services 'mqtt' 'username')
-    password=$(bashio::services 'mqtt' 'password')
+  host=$(bashio::services 'mqtt' 'host')
+  port=$(bashio::services 'mqtt' 'port')
+  username=$(bashio::services 'mqtt' 'username')
+  password=$(bashio::services 'mqtt' 'password')
 fi
 
 export "MQTT_HOST=${host}"
@@ -30,51 +30,61 @@ export "MQTT_USERNAME=${username}"
 export "MQTT_PASSWORD=${password}"
 
 if bashio::config.exists 'mqtt.client_id'; then
-    export "MQTT_CLIENT_ID=$(bashio::config 'mqtt.client_id')"
+  export "MQTT_CLIENT_ID=$(bashio::config 'mqtt.client_id')"
 fi
 if bashio::config.exists 'mqtt.base_topic'; then
-    export "MQTT_BASE_TOPIC=$(bashio::config 'mqtt.base_topic')"
+  export "MQTT_BASE_TOPIC=$(bashio::config 'mqtt.base_topic')"
 fi
 
 if ! bashio::config.is_empty 'mqtt.ca'; then
-    export "MQTT_CA=/ssl/$(bashio::config 'mqtt.ca')"
-    
-    if ! bashio::config.is_empty 'mqtt.cert'; then
-        export "MQTT_CERT=$(bashio::config 'mqtt.cert')"
-        export "MQTT_KEY=$(bashio::config 'mqtt.key')"
-    fi
+  export "MQTT_CA=/ssl/$(bashio::config 'mqtt.ca')"
+
+  if ! bashio::config.is_empty 'mqtt.cert'; then
+    export "MQTT_CERT=$(bashio::config 'mqtt.cert')"
+    export "MQTT_KEY=$(bashio::config 'mqtt.key')"
+  fi
 fi
 
 # --- SET DISCOVERY SETTINGS ---
 if bashio::config.false 'home_assistant_discovery_enabled'; then
-    export "HA_DISCOVERY_DISABLED=true"
+  export "HA_DISCOVERY_DISABLED=true"
 elif bashio::config.exists 'home_assistant_discovery_prefix'; then
-    export "HA_DISCOVERY_TOPIC=$(bashio::config 'home_assistant_discovery_prefix')"
+  export "HA_DISCOVERY_TOPIC=$(bashio::config 'home_assistant_discovery_prefix')"
 fi
 
 # --- OTHER SETTINGS ---
 export "LAST_SEEN=$(bashio::config 'last_seen' 'disable')"
 
 if bashio::config.exists 'rtlamr_symbol_length'; then
-    export "SYMBOL_LENGTH=$(bashio::config 'rtlamr_symbol_length')"
+  export "SYMBOL_LENGTH=$(bashio::config 'rtlamr_symbol_length')"
+fi
+
+if bashio::config.exists 'rtl_tcp_host'; then
+  export "RTL_TCP_HOST=$(bashio::config 'rtl_tcp_host')"
+fi
+
+if bashio::config.exists 'rtl_tcp_port'; then
+  export "RTL_TCP_PORT=$(bashio::config 'rtl_tcp_port')"
 fi
 
 # --- SET LOG LEVEL ---
-case "$(bashio::config 'log_level')" in \
-    trace)      ;& \
-    debug)      log_level='DEBUG' ;; \
-    notice)     ;& \
-    warning)    log_level='WARNING' ;; \
-    error)      log_level='ERROR' ;; \
-    fatal)      log_level='CRITICAL' ;; \
-    *)          log_level='INFO' ;; \
-esac;
+case "$(bashio::config 'log_level')" in
+trace) ;&
+debug) log_level='DEBUG' ;;
+notice) ;&
+warning) log_level='WARNING' ;;
+error) log_level='ERROR' ;;
+fatal) log_level='CRITICAL' ;;
+*) log_level='INFO' ;;
+esac
 export LOG_LEVEL="${log_level}"
 bashio::log.info "Log level set to ${log_level}"
 
-bashio::log.info 'Waiting for rtl_tcp...'
-bashio::net.wait_for 1234
+if bashio::config.is_empty 'rtl_tcp_host'; then
+  bashio::log.info 'Waiting for rtl_tcp...'
+  bashio::net.wait_for 1234
+fi
 
 bashio::log.info 'Handing over control to AMR2MQTT...'
 exec s6-setuidgid abc \
-    /usr/bin/python3 /amr2mqtt/amr2mqtt.py
+  /usr/bin/python3 /amr2mqtt/amr2mqtt.py

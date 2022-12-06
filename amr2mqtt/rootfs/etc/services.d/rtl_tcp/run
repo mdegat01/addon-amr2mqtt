@@ -2,14 +2,19 @@
 # shellcheck shell=bash
 # ==============================================================================
 # Home Assistant Add-on: AMR2MQTT
-# Runs rtl_tcp 
+# Runs rtl_tcp
 # ==============================================================================
 
-bashio::log.info 'Starting rtl_tcp daemon...'
-# If log level is set higher then notice, suppress all output from rtl_tcp
-case "$(bashio::config 'log_level')" in \
-    warning)    ;& \
-    error)      ;& \
-    fatal)      /usr/bin/rtl_tcp > /dev/null 2>&1 ;; \
-    *)          /usr/bin/rtl_tcp ;; \
-esac;
+if bashio::config.exists 'rtl_tcp_host'; then
+  echo "Skipping starting rtl_tcp since another address is provided"
+else
+
+  bashio::log.info 'Starting rtl_tcp daemon...'
+  # If log level is set higher then notice, suppress all output from rtl_tcp
+  case "$(bashio::config 'log_level')" in
+  warning) ;&
+  error) ;&
+  fatal) /usr/bin/rtl_tcp >/dev/null 2>&1 ;;
+  *) /usr/bin/rtl_tcp ;;
+  esac
+fi

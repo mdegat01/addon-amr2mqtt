@@ -217,7 +217,7 @@ def set_consumption_details(payload, meter):
         elif meter["type"] == "energy":
             payload["device_class"] = "energy"
         else:
-            payload["icon"] = "mdi:water"
+            payload["device_class"] = "water"
 
     if "unit_of_measurement" in meter:
         payload["unit_of_measurement"] = meter["unit_of_measurement"]

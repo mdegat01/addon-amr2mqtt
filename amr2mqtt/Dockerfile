@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base/amd64
+ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base/amd64:6.2.7 
 
 # https://hub.docker.com/_/alpine
 FROM alpine:3.16.2 as build_rtlamr
@@ -8,8 +8,8 @@ ENV RTLAMR_VERSION 0.9.1
 RUN set -eux; \
     apk update; \
         apk add --no-cache --virtual .build-deps \
-            tar=1.34-r0 \
-            curl=7.83.1-r2 \
+            tar=1.34-r1 \
+            curl=8.5.0-r0 \
         ; \
     APKARCH="$(apk --print-arch)"; \
     case "${APKARCH}" in \

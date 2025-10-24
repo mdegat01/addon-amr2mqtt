@@ -109,7 +109,7 @@ meters:
     name: My gas meter
     type: gas
     multiplier: 0.01
-    unit_of_measurement: ccf
+    unit_of_measurement: CCF
 mqtt:
   host: 127.0.0.1
   port: 1883
